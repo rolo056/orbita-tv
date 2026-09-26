@@ -73,16 +73,16 @@ fun PlayerScreen(
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 when (event.key) {
-                    Key.DirectionUp, Key.ChannelUp -> {
+                    Key.DirectionUp -> {
                         onPrevChannel(); showInfo = true; true
                     }
-                    Key.DirectionDown, Key.ChannelDown -> {
+                    Key.DirectionDown -> {
                         onNextChannel(); showInfo = true; true
                     }
                     Key.DirectionCenter, Key.Enter -> {
                         showInfo = !showInfo; true
                     }
-                    Key.Menu, Key.I, Key.Info -> {
+                    Key.Menu, Key.DirectionRight -> {
                         showHud = !showHud; true
                     }
                     else -> false
@@ -141,7 +141,7 @@ fun PlayerScreen(
                     }
                 }
                 Spacer(Modifier.height(4.dp))
-                Hint("Arriba/abajo cambia de canal · OK muestra u oculta esto · Menú abre el detalle técnico")
+                Hint("Arriba y abajo cambian de canal · OK muestra u oculta esto · Derecha abre el detalle técnico")
             }
         }
 

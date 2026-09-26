@@ -77,6 +77,8 @@ class ResilientPlayer(
     private var hardened = false
     private var retryJob: Job? = null
     private var watchdogJob: Job? = null
+    private var deadlineJob: Job? = null
+    private var startedOnVariant = false
 
     // Estado del vigilante
     private var lastPosition = -1L
@@ -92,6 +94,8 @@ class ResilientPlayer(
 
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_READY) {
+                    startedOnVariant = true
+                    deadlineJob?.cancel()
                     _stats.value = _stats.value.copy(status = "Reproduciendo")
                 }
             }
@@ -162,6 +166,7 @@ class ResilientPlayer(
 
     fun play(channelName: String, streamId: Int) {
         retryJob?.cancel()
+        deadlineJob?.cancel()
         currentStreamId = streamId
         variants = StreamVariants.forChannel(settings.account, streamId, settings.net.variantOrder)
         variantIndex = 0
@@ -197,9 +202,18 @@ class ResilientPlayer(
             fatalError = null,
         )
         resetWatchdog()
+        startedOnVariant = false
         player.setMediaItem(item)
         player.prepare()
         player.play()
+
+        deadlineJob?.cancel()
+        deadlineJob = scope.launch {
+            delay(LOAD_DEADLINE_MS)
+            if (!startedOnVariant && _stats.value.fatalError == null) {
+                advanceVariant("No dio imagen en " + (LOAD_DEADLINE_MS / 1000) + " s")
+            }
+        }
     }
 
     private fun onError(error: PlaybackException) {
@@ -241,6 +255,10 @@ class ResilientPlayer(
     private fun retry(reason: String) {
         retryJob?.cancel()
         attemptsOnVariant++
+        if (!startedOnVariant && attemptsOnVariant >= 1) {
+            advanceVariant(reason)
+            return
+        }
         if (attemptsOnVariant > 3) {
             advanceVariant(reason)
             return
@@ -377,8 +395,13 @@ class ResilientPlayer(
         }
     }
 
+    private companion object {
+        const val LOAD_DEADLINE_MS = 9_000L
+    }
+
     fun release() {
         retryJob?.cancel()
+        deadlineJob?.cancel()
         watchdogJob?.cancel()
         player.release()
     }

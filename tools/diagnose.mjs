@@ -223,12 +223,23 @@ async function main() {
 
   // 1. Nombre del servidor
   section('1 · Nombre del servidor');
-  const [v4, v6] = await Promise.all([resolve(acc.host, 4), resolve(acc.host, 6)]);
-  if (!v4.length && !v6.length) {
-    line('fail', 'Resolución DNS', `Ninguna dirección para ${acc.host}. El DNS del router no lo resuelve.`);
-    causes.add('PUERTO');
+  let v4 = [];
+  let v6 = [];
+  const literal = net.isIP(acc.host);
+  if (literal === 4) {
+    v4 = [acc.host];
+    line('info', 'Direccion literal', 'El panel se indica por IP, no por nombre: no hay DNS que pueda fallar.');
+  } else if (literal === 6) {
+    v6 = [acc.host];
+    line('info', 'Direccion literal', 'El panel se indica por IPv6 literal.');
   } else {
-    line('ok', 'Resolución DNS', `IPv4: ${v4.join(', ') || 'ninguna'}\nIPv6: ${v6.join(', ') || 'ninguna'}`);
+    [v4, v6] = await Promise.all([resolve(acc.host, 4), resolve(acc.host, 6)]);
+    if (!v4.length && !v6.length) {
+      line('fail', 'Resolucion DNS', 'Ninguna direccion para ' + acc.host + '. El DNS del router no lo resuelve.');
+      causes.add('DNS');
+    } else {
+      line('ok', 'Resolucion DNS', 'IPv4: ' + (v4.join(', ') || 'ninguna') + ' / IPv6: ' + (v6.join(', ') || 'ninguna'));
+    }
   }
 
   // 2. Puerto, separando familias
@@ -252,7 +263,7 @@ async function main() {
       'Starlink entrega IPv6 nativo, así que el televisor lo intenta primero y se queda colgado.\n' +
       'En la app: dejar activado "Forzar IPv4".');
   }
-  if (!v4ok && !v6ok) causes.add('PUERTO');
+  if ((v4.length || v6.length) && !v4ok && !v6ok) causes.add('PUERTO');
 
   // 3. La cuenta, según el propio panel
   section('3 · La cuenta, según el panel');
@@ -380,9 +391,10 @@ falle en el televisor para ver la pausa sin datos.${C.reset}`);
       BLOQUEO: 'El proveedor está bloqueando la salida de Starlink.',
       IPV6: 'IPv6 roto del lado del servidor.',
       PUERTO: 'El puerto del panel no responde.',
+      DNS: 'El nombre del servidor no se resuelve.',
       INESTABLE: 'El enlace trae cortes y hay que absorberlos.',
     };
-    const order = ['OCUPADA', 'BLOQUEO', 'IPV6', 'PUERTO', 'INESTABLE'];
+    const order = ['OCUPADA', 'BLOQUEO', 'IPV6', 'DNS', 'PUERTO', 'INESTABLE'];
     for (const k of order) {
       if (causes.has(k)) console.log(`${C.warn}· ${verdicts[k]}${C.reset}`);
     }
