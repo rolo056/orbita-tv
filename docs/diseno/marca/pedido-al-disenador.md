@@ -1,8 +1,12 @@
 # Reexportación de la marca para Android TV
 
-Los cinco SVG que entregaste sirven como composición, pero no se pueden usar
-dentro de la app todavía. Abajo está el motivo técnico y qué hace falta. Son tres
-pedidos y uno solo es urgente.
+**Estado: falta un solo archivo.** El banner ya llegó y está instalado en la app.
+El logotipo de la barra lateral se resolvió por dentro, dibujándolo con texto real.
+Lo único que sigue faltando es el icono de la aplicación con el texto convertido a
+contornos.
+
+> El banner del 26/09 vino perfecto: 16:9, en tres tamaños y con el texto ya
+> vectorizado. Lo que hace falta es exactamente eso mismo, aplicado al icono.
 
 ## El problema
 
@@ -16,30 +20,30 @@ En los cinco archivos, las letras son elementos `<text>`. Dos consecuencias:
    estirada al ancho fijo de `textLength`. Hoy el logotipo no se ve igual en dos
    lugares distintos.
 
-## Lo que hace falta
+## Lo que falta: un archivo
 
-### 1. Reexportar con el texto convertido a contornos — urgente
+### El icono de la aplicación, con el texto en contornos
 
-Todos los archivos, con el texto pasado a trazos. En la mayoría de los programas
-la opción se llama *convertir a contornos*, *vectorizar texto* u *outline text*.
-El archivo resultante no debe contener ningún `<text>`.
+`alextv-icono-4b-rojo-profundo.svg`, reexportado con el texto pasado a trazos. En
+la mayoría de los programas la opción se llama *convertir a contornos*,
+*vectorizar texto* u *outline text*. El archivo resultante no debe contener
+ningún `<text>`.
 
 Si preferís mantenerlo como texto, la alternativa es mandar también el archivo de
 la tipografía (`.ttf` o `.otf`) y declararla con `font-family`. Contornos es más
 simple y no deja nada al azar.
 
-### 2. Falta el banner del televisor — urgente
+Un PNG cuadrado de 512 × 512 también sirve, si resulta más rápido. Para el icono
+no hace falta que sea vectorial.
 
-No vino en la entrega y Android TV lo necesita: es el mosaico que representa la
-app en la fila de inicio del televisor, y es lo primero que se ve.
+### Ya resuelto
 
-- **Proporción 16:9**, idealmente `viewBox` de 320 × 180 (o cualquier múltiplo).
-- Es una composición **horizontal** y aparte, no el icono cuadrado recortado.
-- **El nombre tiene que leerse dentro del banner**, porque el televisor no
-  siempre muestra un rótulo al lado.
-- Mismo criterio que el icono elegido: la variante **rojo profundo**.
+- **El banner**: llegó en 320 × 180, 1280 × 720 y 1920 × 1080, con el texto ya
+  vectorizado. Instalado en la app.
+- **El logotipo de la barra lateral**: se dibuja con texto real dentro de la app,
+  tomando los colores del tema. No hace falta ningún archivo.
 
-### 3. Un carácter corrupto
+### Un carácter corrupto
 
 En `alextv-icono-4c-carbon.svg`, la etiqueta dice `TV � 4K`: el separador se
 perdió en la exportación. No lo usamos como icono, pero conviene corregirlo en el
@@ -62,8 +66,8 @@ efecto se conserva.
 
 | Archivo | Destino | Estado |
 |---|---|---|
-| `alextv-icono-4b-rojo-profundo.svg` | Icono de la aplicación | Esperando contornos |
-| *(falta)* | Banner del televisor, 16:9 | Por crear |
+| `alextv-icono-4b-rojo-profundo.svg` | Icono de la aplicación | **Lo único pendiente**: esperando contornos |
+| `banner/alextv-banner-androidtv-320x180.png` | Banner del televisor | Instalado en la app |
 | `alextv-logotipo-fondo-oscuro.svg` | Barra lateral de la app | **Ya resuelto**: se dibuja con texto real dentro de la app, tomando los colores del tema. Una versión en contornos igual sirve para otros usos. |
 | `alextv-logotipo-fondo-claro.svg` | Fondos claros, fuera de la app | Sin uso por ahora |
 | `alextv-icono-4a-reticula.svg`, `4c-carbon.svg` | Variantes no elegidas | Se archivan |
