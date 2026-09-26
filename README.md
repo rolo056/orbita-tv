@@ -83,6 +83,24 @@ estructura que no esté previsto como opción.
 vez al abrir, así se trabaja el diseño viendo el televisor cambiar. Déjalo
 apagado para ver televisión.
 
+### El editor en vivo
+
+```
+node tools/servidor-tema.mjs
+```
+
+Imprime dos direcciones: el editor para abrir en el navegador de la PC, y la que
+va en Ajustes → Dirección del archivo de apariencia en el televisor. Con Modo
+diseño activado, mueves un control y el TV cambia en 3 segundos.
+
+Escribe el `tema.json` de verdad, así que cuando el diseño te guste solo queda
+confirmarlo en git. No toca las claves que empiezan con guion bajo: son las notas
+para quien edite el archivo a mano.
+
+Funciona porque el televisor y la PC están en la misma red, que es exactamente
+cuando estás diseñando. Para dejarlo fuera de la red local, el mismo archivo
+corre en un servidor sin cambios.
+
 Tres capas, en este orden, y por eso la app nunca arranca fea: lo que trae el
 APK, lo último que se descargó bien (guardado en disco, sirve sin red), y lo que
 responda el servidor ahora.
