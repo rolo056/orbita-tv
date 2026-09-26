@@ -1,4 +1,4 @@
-# Órbita TV
+# ALEX TV
 
 Reproductor de listas Xtream para Android TV, hecho para un enlace satelital que
 se corta. La app no intenta ser bonita: intenta no quedarse en negro.
@@ -9,7 +9,7 @@ En Starlink los canales de IPTV fallan mientras YouTube y el navegador andan
 perfecto. No es una casualidad ni mala suerte: son cinco causas concretas, y
 ninguna se parece a lo que hace YouTube.
 
-| Causa | Por qué YouTube no la sufre | Qué hace Órbita |
+| Causa | Por qué YouTube no la sufre | Qué hace ALEX TV |
 |---|---|---|
 | El canal viene como MPEG-TS crudo sobre **una** conexión TCP que debe durar horas. Starlink salta de satélite cada ~15 s y pierde paquetes; la conexión muere y no hay nada que reintentar. | YouTube usa segmentos reintentables, búfer grande y QUIC, que se recupera rápido de la pérdida. | Pide el canal en HLS primero (segmentado, se recupera solo), con TS como respaldo. Búfer de 30 a 180 s y retardo deliberado respecto del directo. |
 | **La imagen se congela sin dar error**: el socket queda abierto pero deja de traer bytes. ExoPlayer y casi todos los reproductores esperan para siempre. | No aplica. | Vigilante propio: compara la posición de reproducción cada segundo y, si no avanza, corta y reconecta por su cuenta. |

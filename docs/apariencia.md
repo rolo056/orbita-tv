@@ -1,4 +1,4 @@
-# Cómo diseñar la apariencia de Órbita TV
+# Cómo diseñar la apariencia de ALEX TV
 
 Este archivo es el encargo completo. Se le entrega a quien vaya a diseñar la
 apariencia —una persona o un asistente— y alcanza por sí solo: describe la app,
@@ -37,7 +37,7 @@ Eso manda tres cosas antes que cualquier gusto estético:
 │                                 borde                       │
 │ ┌──────────────┐  ┌──────────────────────────────────────┐  │
 │ │ logoUrl      │  │ 89 CANALES          <- textoSuave    │  │
-│ │  o "Órbita"  │  │                                      │  │
+│ │  o "ALEX TV" │  │                                      │  │
 │ │              │  │ ┌──────────────────────────────────┐ │  │
 │ │ Todos  <-ace.│  │ │ [logo] Nombre del canal          │ │  │
 │ │ Deportes     │  │ └──────────────────────────────────┘ │  │
@@ -96,7 +96,7 @@ tres colores tienen que distinguirse entre sí a tres metros.
 | `anchoTile` | número (dp) | 120 – 520 | `260` | Ancho mínimo de tarjeta en mosaico; las columnas se acomodan solas |
 | `mostrarLogos` | `true` / `false` | — | `true` | Logo del canal, o su número si se apaga |
 | `anchoBarraLateral` | número (dp) | 160 – 520 | `300` | Ancho de la columna de categorías |
-| `logoUrl` | texto o `null` | — | `null` | Reemplaza el texto "Órbita TV" |
+| `logoUrl` | texto o `null` | — | `null` | Reemplaza el texto "ALEX TV" |
 | `fondoImagenUrl` | texto o `null` | — | `null` | Imagen detrás de todo |
 | `fondoImagenOpacidad` | número | 0 – 1 | `0.25` | Opacidad de esa imagen |
 

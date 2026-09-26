@@ -97,7 +97,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ultima
-          name: Orbita TV - ultima compilacion
+          name: ALEX TV - ultima compilacion
           prerelease: true
           files: |
             salida/orbita-tv.apk

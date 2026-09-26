@@ -31,7 +31,7 @@
   "mostrarLogos": true,
   "anchoBarraLateral": 300,
 
-  "_marca": "logoUrl reemplaza el texto Órbita TV de la barra lateral. fondoImagenUrl va detrás de todo; con opacidad alta el texto se vuelve ilegible, 0.15 a 0.3 funciona.",
+  "_marca": "logoUrl reemplaza el texto ALEX TV de la barra lateral. fondoImagenUrl va detrás de todo; con opacidad alta el texto se vuelve ilegible, 0.15 a 0.3 funciona.",
   "logoUrl": null,
   "fondoImagenUrl": null,
   "fondoImagenOpacidad": 0.25

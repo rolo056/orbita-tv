@@ -74,7 +74,7 @@ fun ChannelsScreen(
                 )
             } else {
                 Text(
-                    "Órbita TV",
+                    "ALEX TV",
                     color = Tint.text,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.SemiBold,

@@ -179,7 +179,7 @@ function paginaEditor(tema) {
 </style></head>
 <body>
 <header>
-  <h1>Apariencia de Órbita TV</h1>
+  <h1>Apariencia de ALEX TV</h1>
   <p class="sub">Cada cambio se guarda en tema.json. Con Modo diseño activado, el
   televisor lo toma en 3 segundos.</p>
 </header>
