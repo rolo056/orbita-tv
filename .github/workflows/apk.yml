@@ -3,6 +3,15 @@ name: Compilar APK
 on:
   push:
     branches: [main]
+    # Nada de esto entra en el APK. Sin este filtro, cambiar un color en
+    # tema.json publicaria una version nueva y el televisor ofreceria
+    # actualizar a algo identico a lo que ya tiene instalado.
+    paths-ignore:
+      - 'tema.json'
+      - 'docs/**'
+      - 'tools/**'
+      - 'README.md'
+      - '.gitignore'
   workflow_dispatch:
 
 permissions:

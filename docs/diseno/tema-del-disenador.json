@@ -1,0 +1,22 @@
+{
+  "fondo": "#1C1A19",
+  "tarjeta": "#262322",
+  "tarjetaFoco": "#3D3836",
+  "linea": "#3A3736",
+  "texto": "#F3F2F2",
+  "textoSuave": "#BAB6B6",
+  "acento": "#FF563C",
+  "aviso": "#E8B04A",
+  "falla": "#E86BB0",
+  "esquinas": 0,
+  "grosorFoco": 4,
+  "grosorReposo": 1,
+  "escalaFoco": 1.03,
+  "escalaTexto": 1.1,
+  "margenPantalla": 40,
+  "separacion": 10,
+  "disposicion": "lista",
+  "anchoTile": 300,
+  "mostrarLogos": true,
+  "anchoBarraLateral": 360
+}

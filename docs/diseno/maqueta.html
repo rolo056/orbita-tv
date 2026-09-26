@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/modernist-2a2e653f-6c63-40fb-9d8e-c33a4609fb0c/styles.css">
+<script src="_ds/modernist-2a2e653f-6c63-40fb-9d8e-c33a4609fb0c/_ds_bundle.js"></script>
+<style>body{margin:0;background:#121110;font-family:var(--font-body)}a{color:#FF563C}a:hover{color:#ff9783}</style>
+</helmet>
+<div style="padding:80px;display:flex;flex-direction:column;gap:96px;background:#121110;font-family:var(--font-body);color:#F3F2F2;width:2080px">
+
+<div style="display:flex;flex-direction:column;gap:16px;border-bottom:2px solid #3A3736;padding-bottom:40px">
+  <div style="font-size:24px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em">ANDROID TV · 1920 × 1080 · MANDO A DISTANCIA</div>
+  <div style="font-size:88px;font-weight:800;letter-spacing:-0.03em;line-height:1">ALEX TV — interfaz completa</div>
+  <div style="font-size:28px;color:#BAB6B6;max-width:1400px;text-wrap:pretty">Las pantallas 01 y 03 responden al teclado: ▲ ▼ mueven el foco entre canales, ◀ ▶ cambian el tamaño de imagen. También se puede hacer clic en categorías, canales y modos.</div>
+</div>
+
+<!-- 00 LOGO -->
+<div data-screen-label="00 Logo" style="display:flex;flex-direction:column;gap:20px">
+  <div style="font-size:26px;font-weight:800;color:#BAB6B6">00 · Logo</div>
+  <div style="width:1920px;display:grid;grid-template-columns:1fr 1fr;border:2px solid #3A3736">
+    <div style="background:#1C1A19;padding:64px;display:flex;flex-direction:column;gap:32px;border-right:2px solid #3A3736;min-height:520px;justify-content:space-between">
+      <div style="font-size:24px;font-weight:600;color:#BAB6B6">Logotipo · sobre fondo</div>
+      <div style="display:flex;align-items:stretch;font-weight:800;line-height:0.9">
+        <div style="font-size:180px;letter-spacing:-0.05em;color:#F3F2F2;padding-right:20px">ALEX</div>
+        <div style="background:#FF563C;color:#F3F2F2;font-size:180px;letter-spacing:-0.04em;padding:14px 22px 0 18px">TV</div>
+      </div>
+      <div style="font-size:24px;color:#BAB6B6">Archivo 800 · interletraje −5 % · bloque de acento con “TV”</div>
+    </div>
+    <div style="background:#F3F2F2;padding:64px;display:flex;flex-direction:column;gap:32px;justify-content:space-between">
+      <div style="font-size:24px;font-weight:600;color:#605d5d">Logotipo · sobre claro</div>
+      <div style="display:flex;align-items:stretch;font-weight:800;line-height:0.9">
+        <div style="font-size:180px;letter-spacing:-0.05em;color:#201e1d;padding-right:20px">ALEX</div>
+        <div style="background:#ec3013;color:#F3F2F2;font-size:180px;letter-spacing:-0.04em;padding:14px 22px 0 18px">TV</div>
+      </div>
+      <div style="font-size:24px;color:#605d5d">Para web, redes y materiales impresos</div>
+    </div>
+    <div style="grid-column:1 / span 2;border-top:2px solid #3A3736;background:#1C1A19;padding:64px;display:flex;flex-wrap:wrap;gap:64px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="font-size:24px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em">ÍCONO DE APP · 3 PROPUESTAS</div>
+        <div style="display:flex;gap:40px">
+          <div id="4a" style="display:flex;flex-direction:column;gap:14px">
+            <div style="width:360px;height:360px;background:#121110;position:relative;overflow:hidden;outline:2px solid #3A3736;font-weight:800;color:#F3F2F2">
+              <div style="position:absolute;inset:0;background-image:linear-gradient(#262322 2px,transparent 2px),linear-gradient(90deg,#262322 2px,transparent 2px);background-size:60px 60px"></div>
+              <div style="position:absolute;left:24px;top:24px;display:flex;align-items:center;gap:8px;font-size:22px;letter-spacing:0.12em;color:#BAB6B6"><div style="width:12px;height:12px;background:#FF563C"></div>LIVE</div>
+              <div style="position:absolute;left:18px;bottom:78px;font-size:128px;letter-spacing:-0.06em;line-height:0.8">ALEX</div>
+              <div style="position:absolute;left:24px;right:24px;bottom:24px;height:34px;background:#FF563C;display:flex;align-items:center;padding-left:12px;font-size:24px;letter-spacing:0.2em">TV</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="background:#F3F2F2;color:#1C1A19;font-size:20px;font-weight:800;padding:2px 10px">4a</span><span style="font-size:22px;color:#BAB6B6">Retícula técnica · ALEX dominante</span></div>
+          </div>
+          <div id="4b" style="display:flex;flex-direction:column;gap:14px">
+            <div style="width:360px;height:360px;background:radial-gradient(120% 90% at 100% 0%,#FF563C 0%,#B8260F 38%,#3A1109 72%,#121110 100%);position:relative;overflow:hidden;outline:2px solid #3A3736;font-weight:800;color:#F3F2F2">
+              <div style="position:absolute;left:18px;bottom:78px;font-size:128px;letter-spacing:-0.06em;line-height:0.8">ALEX</div>
+              <div style="position:absolute;left:24px;right:24px;bottom:24px;height:34px;background:#F3F2F2;color:#1C1A19;display:flex;align-items:center;padding-left:12px;font-size:24px;letter-spacing:0.2em">TV</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="background:#F3F2F2;color:#1C1A19;font-size:20px;font-weight:800;padding:2px 10px">4b</span><span style="font-size:22px;color:#BAB6B6">ALEX · fondo rojo profundo</span></div>
+          </div>
+          <div id="4c" style="display:flex;flex-direction:column;gap:14px">
+            <div style="width:360px;height:360px;background:#1C1A19;position:relative;overflow:hidden;outline:2px solid #3A3736;font-weight:800">
+              <div style="position:absolute;left:0;right:0;top:0;height:8px;background:#FF563C"></div>
+              <div style="position:absolute;left:24px;top:36px;font-size:22px;letter-spacing:0.16em;color:#BAB6B6">TV · 4K</div>
+              <div style="position:absolute;left:16px;bottom:22px;display:flex;font-size:132px;letter-spacing:-0.06em;line-height:0.8"><span style="color:#F3F2F2">ALE</span><span style="color:#FF563C">X</span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="background:#F3F2F2;color:#1C1A19;font-size:20px;font-weight:800;padding:2px 10px">4c</span><span style="font-size:22px;color:#BAB6B6">Carbón · la X como marca</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="width:640px;height:360px;background:#1C1A19;border:2px solid #3A3736;display:flex;align-items:stretch">
+          <div style="flex:1;padding:40px;display:flex;flex-direction:column;justify-content:flex-end;font-weight:800;line-height:0.9">
+            <div style="display:flex;align-items:stretch">
+              <div style="font-size:120px;letter-spacing:-0.05em;padding-right:12px">ALEX</div>
+              <div style="background:#FF563C;font-size:120px;letter-spacing:-0.04em;padding:10px 14px 0 12px">TV</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:22px;color:#BAB6B6">Banner de Android TV · 320 × 180 (mostrado a 2×)</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:stretch;font-weight:800;line-height:1;border:2px solid #3A3736;padding:24px">
+          <div style="font-size:44px;letter-spacing:-0.04em;padding-right:8px">ALEX</div>
+          <div style="background:#F3F2F2;color:#1C1A19;font-size:44px;letter-spacing:-0.02em;padding:0 8px">TV</div>
+        </div>
+        <div style="font-size:22px;color:#BAB6B6;max-width:360px;text-wrap:pretty">Versión de barra lateral: sin rojo, para que el acento quede reservado al foco.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 01 CANALES LISTA -->
+<div data-screen-label="01 Canales lista" style="display:flex;flex-direction:column;gap:20px">
+  <div style="font-size:26px;font-weight:800;color:#BAB6B6">01 · Canales · lista con ventana de vista previa (clic en un canal)</div>
+  <div style="width:1920px;height:1080px;background:#1C1A19;display:flex;overflow:hidden;position:relative">
+    <div style="width:360px;flex:none;display:flex;flex-direction:column;border-right:2px solid #3A3736;padding:40px 24px 40px 40px">
+      <div style="display:flex;align-items:stretch;font-weight:800;line-height:1;margin-bottom:48px">
+        <div style="font-size:44px;letter-spacing:-0.04em;padding-right:8px">ALEX</div>
+        <div style="background:#F3F2F2;color:#1C1A19;font-size:44px;letter-spacing:-0.02em;padding:0 8px">TV</div>
+      </div>
+      <div style="font-size:22px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em;margin-bottom:12px;padding-left:22px">CATEGORÍAS</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="9">
+          <div onClick="{{ c.onClick }}" style="display:flex;align-items:center;gap:16px;padding:12px 16px 12px 0;background:{{ c.bg }};cursor:pointer">
+            <div style="width:6px;height:36px;background:{{ c.bar }}"></div>
+            <div style="flex:1;font-size:29px;font-weight:{{ c.fw }};color:{{ c.color }}">{{ c.label }}</div>
+            <div style="font-size:23px;color:#BAB6B6">{{ c.count }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:1"></div>
+      <div style="border-top:2px solid #3A3736;padding-top:16px;display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:28px;color:#BAB6B6;padding:10px 0 10px 22px">Diagnóstico</div>
+        <div style="font-size:28px;color:#BAB6B6;padding:10px 0 10px 22px">Ajustes</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;padding:40px 48px 0 40px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #3A3736;padding-bottom:20px;margin-bottom:20px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:24px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em">{{ countLabel }}</div>
+          <div style="font-size:56px;font-weight:800;letter-spacing:-0.03em;line-height:1">{{ catLabel }}</div>
+        </div>
+        <div style="font-size:30px;font-weight:600;color:#BAB6B6">21:14</div>
+      </div>
+      <div style="flex:1;min-height:0;display:flex;gap:32px">
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;overflow:hidden;padding:6px 18px">
+        <sc-for list="{{ list }}" as="ch" hint-placeholder-count="7">
+          <div onMouseEnter="{{ ch.onEnter }}" onClick="{{ ch.onClick }}" style="flex:none;height:104px;display:flex;align-items:center;gap:28px;padding:0 28px;background:{{ ch.bg }};box-shadow:{{ ch.ring }};transform:{{ ch.tf }};transition:transform 120ms, background 120ms;cursor:pointer">
+            <div style="width:64px;font-size:28px;font-weight:600;color:#BAB6B6">{{ ch.num }}</div>
+            <sc-if value="{{ showLogos }}" hint-placeholder-val="{{ true }}">
+              <div style="width:112px;height:64px;flex:none;background:#F3F2F2;color:#1C1A19;display:flex;align-items:center;padding-left:12px;font-size:30px;font-weight:800;letter-spacing:-0.03em">{{ ch.abbr }}</div>
+            </sc-if>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:36px;font-weight:800;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ch.name }}</div>
+              <div style="font-size:24px;color:#BAB6B6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ch.progLine }}</div>
+            </div>
+            <sc-if value="{{ ch.isPlaying }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none;background:#F3F2F2;color:#1C1A19;font-size:22px;font-weight:800;padding:4px 10px;letter-spacing:0.04em">▶ EN VENTANA</div>
+            </sc-if>
+            <sc-if value="{{ ch.notPlaying }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:24px;color:#BAB6B6;flex:none">{{ ch.time }}</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="width:600px;flex:none;display:flex;flex-direction:column;gap:0;padding-top:6px">
+        <div style="width:600px;height:338px;background:#000;position:relative;overflow:hidden;outline:2px solid #3A3736">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#2d2b2b 0 30px,#262423 30px 60px);display:flex;align-items:center;padding-left:32px">
+            <div style="font-size:22px;font-weight:600;color:#9b9797;letter-spacing:0.08em">SEÑAL DE VIDEO</div>
+          </div>
+          <div style="position:absolute;top:16px;left:16px;background:rgba(12,11,11,0.86);font-size:22px;font-weight:800;padding:4px 12px;letter-spacing:0.06em;display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:#FF563C"></div>EN VIVO</div>
+        </div>
+        <div style="background:#262322;border:1px solid #3A3736;border-top:none;padding:24px 28px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:20px">
+            <div style="width:96px;height:56px;flex:none;background:#F3F2F2;color:#1C1A19;display:flex;align-items:center;padding-left:10px;font-size:26px;font-weight:800;letter-spacing:-0.03em">{{ playAbbr }}</div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+              <div style="font-size:24px;font-weight:600;color:#BAB6B6">{{ playNum }}</div>
+              <div style="font-size:36px;font-weight:800;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ playName }}</div>
+            </div>
+          </div>
+          <sc-if value="{{ playEpg }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:26px;font-weight:600">{{ playProg }}</div>
+              <div style="font-size:24px;color:#BAB6B6">{{ playTime }}</div>
+            </div>
+            <div style="height:6px;background:#3A3736"><div style="width:{{ playPct }};height:6px;background:#F3F2F2"></div></div>
+          </sc-if>
+          <sc-if value="{{ playNoEpg }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:26px;font-weight:600">Transmisión en vivo</div>
+              <div style="font-size:24px;color:#BAB6B6">Este canal no envía guía de programación</div>
+            </div>
+            <div style="height:6px;background:#3A3736"></div>
+          </sc-if>
+        </div>
+        <div style="border-top:2px solid #3A3736;margin-top:24px;padding-top:20px;display:flex;flex-direction:column;gap:14px;font-size:24px;color:#BAB6B6">
+          <div style="display:flex;align-items:center;gap:12px"><span style="border:2px solid #BAB6B6;color:#F3F2F2;font-weight:800;padding:2px 12px">OK</span>en otro canal: cambia la ventana</div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="border:2px solid #BAB6B6;color:#F3F2F2;font-weight:800;padding:2px 12px">OK</span>en el mismo canal: pantalla completa</div>
+        </div>
+      </div>
+      </div>
+      <div style="flex:none;height:88px;border-top:2px solid #3A3736;display:flex;align-items:center;gap:40px;font-size:24px;color:#BAB6B6">
+        <div style="display:flex;align-items:center;gap:12px"><span style="border:2px solid #BAB6B6;color:#F3F2F2;font-weight:800;padding:2px 12px">▲ ▼</span>Moverse</div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="border:2px solid #BAB6B6;color:#F3F2F2;font-weight:800;padding:2px 12px">OK</span>Ver en ventana</div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="border:2px solid #BAB6B6;color:#F3F2F2;font-weight:800;padding:2px 12px">◀</span>Categorías</div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="border:2px solid #BAB6B6;color:#F3F2F2;font-weight:800;padding:2px 12px">Mantener OK</span>Añadir a favoritos</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 02 CANALES MOSAICO -->
+<div data-screen-label="02 Canales mosaico" style="display:flex;flex-direction:column;gap:20px">
+  <div style="font-size:26px;font-weight:800;color:#BAB6B6">02 · Canales · mosaico (disposicion: "mosaico")</div>
+  <div style="width:1920px;height:1080px;background:#1C1A19;display:flex;overflow:hidden">
+    <div style="width:360px;flex:none;display:flex;flex-direction:column;border-right:2px solid #3A3736;padding:40px 24px 40px 40px">
+      <div style="display:flex;align-items:stretch;font-weight:800;line-height:1;margin-bottom:48px">
+        <div style="font-size:44px;letter-spacing:-0.04em;padding-right:8px">ALEX</div>
+        <div style="background:#F3F2F2;color:#1C1A19;font-size:44px;letter-spacing:-0.02em;padding:0 8px">TV</div>
+      </div>
+      <div style="font-size:22px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em;margin-bottom:12px;padding-left:22px">CATEGORÍAS</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="9">
+          <div onClick="{{ c.onClick }}" style="display:flex;align-items:center;gap:16px;padding:12px 16px 12px 0;background:{{ c.bg }};cursor:pointer">
+            <div style="width:6px;height:36px;background:{{ c.bar }}"></div>
+            <div style="flex:1;font-size:29px;font-weight:{{ c.fw }};color:{{ c.color }}">{{ c.label }}</div>
+            <div style="font-size:23px;color:#BAB6B6">{{ c.count }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:1"></div>
+      <div style="border-top:2px solid #3A3736;padding-top:16px;display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:28px;color:#BAB6B6;padding:10px 0 10px 22px">Diagnóstico</div>
+        <div style="font-size:28px;color:#BAB6B6;padding:10px 0 10px 22px">Ajustes</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;padding:40px 48px 40px 40px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #3A3736;padding-bottom:20px;margin-bottom:28px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:24px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em">{{ countLabel }}</div>
+          <div style="font-size:56px;font-weight:800;letter-spacing:-0.03em;line-height:1">{{ catLabel }}</div>
+        </div>
+        <div style="font-size:30px;font-weight:600;color:#BAB6B6">21:14</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding:8px;overflow:hidden">
+        <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="12">
+          <div onMouseEnter="{{ t.onEnter }}" onClick="{{ t.onClick }}" style="background:{{ t.bg }};box-shadow:{{ t.ring }};transform:{{ t.tf }};transition:transform 120ms, background 120ms;cursor:pointer;display:flex;flex-direction:column">
+            <div style="height:150px;background:#F3F2F2;color:#1C1A19;display:flex;align-items:flex-end;justify-content:space-between;padding:14px 18px">
+              <div style="font-size:56px;font-weight:800;letter-spacing:-0.04em;line-height:1">{{ t.abbr }}</div>
+              <div style="font-size:24px;font-weight:600">{{ t.num }}</div>
+            </div>
+            <div style="padding:14px 18px 18px;display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:30px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</div>
+              <div style="font-size:23px;color:#BAB6B6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.progShort }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 03 REPRODUCTOR -->
+<div data-screen-label="03 Reproductor" style="display:flex;flex-direction:column;gap:20px">
+  <div style="font-size:26px;font-weight:800;color:#BAB6B6">03 · Reproductor · agrandar la imagen (interactiva: ◀ ▶ o clic)</div>
+  <div style="width:1920px;height:1080px;background:#000;position:relative;overflow:hidden">
+    <div style="position:absolute;left:50%;top:50%;width:{{ vw }};height:{{ vh }};transform:translate(-50%,-50%);transition:width 300ms ease, height 300ms ease;background:repeating-linear-gradient(135deg,#2d2b2b 0 40px,#262423 40px 80px);outline:2px solid #7d7979;display:flex;align-items:center;padding:0 120px">
+      <div style="font-size:26px;font-weight:600;color:#9b9797;letter-spacing:0.08em">SEÑAL DE VIDEO · {{ playName }}</div>
+    </div>
+
+    <sc-if value="{{ showHelp }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;top:48px;left:48px;width:720px;background:rgba(12,11,11,0.86);border-top:4px solid #F3F2F2;padding:32px 36px;display:flex;flex-direction:column;gap:24px">
+        <div style="font-size:24px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em">CÓMO AGRANDAR LA IMAGEN</div>
+        <div style="display:flex;gap:32px;align-items:center">
+          <div style="display:grid;grid-template-columns:64px 64px 64px;grid-template-rows:64px 64px 64px;gap:4px;flex:none">
+            <div></div><div style="border:2px solid #605d5d;display:flex;align-items:center;justify-content:center;font-size:24px;color:#9b9797">▲</div><div></div>
+            <div style="background:#FF563C;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800">◀</div>
+            <div style="border:2px solid #605d5d;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#9b9797">OK</div>
+            <div style="background:#FF563C;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800">▶</div>
+            <div></div><div style="border:2px solid #605d5d;display:flex;align-items:center;justify-content:center;font-size:24px;color:#9b9797">▼</div><div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="font-size:34px;font-weight:800;line-height:1.15;text-wrap:pretty">Pulsa ▶ en el mando para agrandar. ◀ la achica.</div>
+            <div style="font-size:24px;color:#BAB6B6;line-height:1.35;text-wrap:pretty">Cada pulsación pasa al siguiente tamaño. El cambio se guarda para este canal.</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="position:absolute;top:48px;right:48px;width:520px;background:rgba(12,11,11,0.86);padding:28px 28px 20px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:24px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em;margin-bottom:4px">TAMAÑO DE IMAGEN</div>
+      <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
+        <div onClick="{{ m.onClick }}" style="display:flex;align-items:center;gap:20px;padding:16px 20px;background:{{ m.bg }};box-shadow:{{ m.ring }};cursor:pointer">
+          <div style="font-size:26px;font-weight:800;color:#BAB6B6;width:28px">{{ m.key }}</div>
+          <div style="flex:1;display:flex;flex-direction:column">
+            <div style="font-size:32px;font-weight:800">{{ m.label }}</div>
+            <div style="font-size:23px;color:#BAB6B6">{{ m.desc }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="position:absolute;left:48px;right:48px;bottom:48px;background:rgba(12,11,11,0.86);padding:28px 36px;display:flex;align-items:center;gap:32px">
+      <div style="width:132px;height:76px;flex:none;background:#F3F2F2;color:#1C1A19;display:flex;align-items:center;padding-left:14px;font-size:36px;font-weight:800;letter-spacing:-0.03em">{{ playAbbr }}</div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:48px;font-weight:800;letter-spacing:-0.02em;line-height:1.05">{{ playNum }} · {{ playName }}</div>
+        <div style="font-size:26px;color:#BAB6B6">Reproduciendo · HLS · reconexiones: 0 · Imagen: {{ modeLabel }}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:24px;color:#BAB6B6;flex:none">
+        <div style="display:flex;align-items:center;gap:12px"><span style="border:2px solid #BAB6B6;color:#F3F2F2;font-weight:800;padding:2px 12px">▲ ▼</span>Cambiar canal</div>
+        <div style="display:flex;align-items:center;gap:12px"><span style="border:2px solid #BAB6B6;color:#F3F2F2;font-weight:800;padding:2px 12px">OK</span>Ocultar panel</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 04 DIAGNÓSTICO -->
+<div data-screen-label="04 Diagnostico" style="display:flex;flex-direction:column;gap:20px">
+  <div style="font-size:26px;font-weight:800;color:#BAB6B6">04 · Diagnóstico de red</div>
+  <div style="width:1920px;height:1080px;background:#1C1A19;display:flex;overflow:hidden">
+    <div style="width:360px;flex:none;display:flex;flex-direction:column;border-right:2px solid #3A3736;padding:40px 24px 40px 40px">
+      <div style="display:flex;align-items:stretch;font-weight:800;line-height:1;margin-bottom:48px">
+        <div style="font-size:44px;letter-spacing:-0.04em;padding-right:8px">ALEX</div>
+        <div style="background:#F3F2F2;color:#1C1A19;font-size:44px;letter-spacing:-0.02em;padding:0 8px">TV</div>
+      </div>
+      <div style="font-size:22px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em;margin-bottom:12px;padding-left:22px">CATEGORÍAS</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <sc-for list="{{ catsIdle }}" as="c" hint-placeholder-count="9">
+          <div style="display:flex;align-items:center;gap:16px;padding:12px 16px 12px 22px">
+            <div style="flex:1;font-size:29px;color:#BAB6B6">{{ c.label }}</div>
+            <div style="font-size:23px;color:#BAB6B6">{{ c.count }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:1"></div>
+      <div style="border-top:2px solid #3A3736;padding-top:16px;display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:16px;padding:10px 0;background:#3D3836"><div style="width:6px;height:36px;background:#FF563C"></div><div style="font-size:28px;font-weight:800">Diagnóstico</div></div>
+        <div style="font-size:28px;color:#BAB6B6;padding:10px 0 10px 22px">Ajustes</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;padding:40px 48px 40px 40px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #3A3736;padding-bottom:20px;margin-bottom:28px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:24px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em">ÚLTIMA PRUEBA HACE 12 S</div>
+          <div style="font-size:56px;font-weight:800;letter-spacing:-0.03em;line-height:1">Diagnóstico de red</div>
+        </div>
+        <div style="display:flex;gap:32px;font-size:24px;color:#BAB6B6">
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:20px;height:20px;background:#FF563C"></div>Correcto</div>
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:20px;height:20px;background:#E8B04A"></div>Aviso</div>
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:20px;height:20px;background:#E86BB0"></div>Falla</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+        <sc-for list="{{ diag }}" as="d" hint-placeholder-count="6">
+          <div style="background:#262322;border:1px solid #3A3736;padding:28px;display:flex;align-items:center;gap:24px">
+            <div style="width:28px;height:28px;flex:none;background:{{ d.color }}"></div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:32px;font-weight:800">{{ d.name }}</div>
+              <div style="font-size:24px;color:#BAB6B6">{{ d.detail }}</div>
+            </div>
+            <div style="font-size:28px;font-weight:800;color:{{ d.color }}">{{ d.status }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:1"></div>
+      <div style="display:flex;gap:18px;padding:6px">
+        <div style="background:#3D3836;box-shadow:0 0 0 4px #FF563C;padding:22px 32px;font-size:30px;font-weight:800;min-width:420px">Repetir prueba</div>
+        <div style="background:#262322;border:1px solid #3A3736;padding:22px 32px;font-size:30px;font-weight:600;color:#BAB6B6;min-width:420px">Probar otro servidor</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 05 TEMA -->
+<div data-screen-label="05 tema.json" style="display:flex;flex-direction:column;gap:20px">
+  <div style="font-size:26px;font-weight:800;color:#BAB6B6">05 · tema.json para pegar en el editor</div>
+  <div style="width:1920px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:2px solid #3A3736;background:#1C1A19">
+    <pre style="margin:0;padding:56px;font-family:ui-monospace,Menlo,monospace;font-size:26px;line-height:1.5;color:#F3F2F2;border-right:2px solid #3A3736;white-space:pre-wrap">{{ json }}</pre>
+    <div style="padding:56px;display:flex;flex-direction:column;gap:28px">
+      <div style="font-size:24px;font-weight:600;color:#BAB6B6;letter-spacing:0.08em">CONTRASTES VERIFICADOS</div>
+      <sc-for list="{{ checks }}" as="k" hint-placeholder-count="5">
+        <div style="display:flex;justify-content:space-between;gap:24px;border-bottom:2px solid #3A3736;padding-bottom:16px">
+          <div style="font-size:28px">{{ k.pair }}</div>
+          <div style="font-size:28px;font-weight:800">{{ k.ratio }}</div>
+        </div>
+      </sc-for>
+      <div style="font-size:24px;color:#BAB6B6;line-height:1.45;text-wrap:pretty">El rojo de la marca es el acento: solo marca el foco, la categoría activa y “correcto”. Por eso “falla” usa rosa, para no confundirse con el acento a tres metros.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;escalaFoco&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1.03,&quot;min&quot;:1,&quot;max&quot;:1.15,&quot;step&quot;:0.01,&quot;tsType&quot;:&quot;number&quot;},&quot;mostrarLogos&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;mostrarAyuda&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const C = { F:'#1C1A19', T:'#262322', TF:'#3D3836', A:'#FF563C', TX:'#F3F2F2', TS:'#BAB6B6' };
+const CATS = [['todos','Todos'],['fav','Favoritos'],['dep','Deportes'],['not','Noticias'],['cine','Cine'],['ser','Series'],['inf','Infantil'],['mus','Música'],['doc','Documentales']];
+const CH = [
+  [1,'Noticias 24','N24','not','Edición central','20:00–21:30',1],
+  [2,'Canal Uno HD','C1','ser','Hermanos, T3 E8','21:00–22:00',1],
+  [3,'Liga Total','LT','dep','Fútbol · Clásico del sur','20:45–22:45',1],
+  [4,'Cine Clásico','CC','cine','La ciudad dormida (1958)','20:30–22:20',0],
+  [5,'Deportes Max','DMX','dep','Tenis · Final ATP','21:00–23:30',1],
+  [6,'Mundo Noticias','MN','not','Panorama internacional','21:00–22:00',0],
+  [7,'Kids Planet','KP','inf','Los exploradores','20:50–21:20',0],
+  [8,'Ritmo TV','RTM','mus','Top 40 de la semana','21:00–22:00',0],
+  [9,'Descubre','DSC','doc','Océanos profundos','20:00–21:40',1],
+  [10,'Cine Estreno','CE','cine','Horizonte rojo','21:10–23:05',1],
+  [11,'Serie Plus','S+','ser','El despacho, T2 E4','21:00–21:45',0],
+  [12,'Básquet Pro','BP','dep','Conferencia oeste','21:30–23:30',0],
+  [13,'Economía Hoy','EH','not','Mercados al cierre','21:00–21:30',0],
+  [14,'Animados','ANI','inf','Robots en casa','21:00–21:30',0],
+  [15,'Clásicos del Rock','CR','mus','Conciertos en vivo','20:00–22:00',0],
+  [16,'Historia Viva','HV','doc','Imperios de piedra','21:00–22:00',0],
+  [17,'Motor Sport','MS','dep','Resumen de la carrera','21:00–22:00',0],
+  [18,'Cine de Autor','CA','cine','Silencio en la sala','20:40–22:30',0],
+  [19,'Drama TV','DTV','ser','Herencia, E112','21:00–21:50',0],
+  [20,'Noticias Local','NL','not','Informe del tiempo','21:10–21:25',0],
+  [21,'Junior','JR','inf','Cuentos de la granja','21:00–21:20',0],
+  [22,'Naturaleza','NAT','doc','La gran migración','20:30–21:30',0],
+  [23,'Combate TV','CTV','dep','Boxeo · Peso medio','21:00–23:00',0],
+  [24,'Latino Hits','LH','mus','Videos sin parar','—',0]
+].map(([n,name,abbr,cat,prog,time,fav])=>{
+  if ([6,8,13,24].includes(n)) { prog=''; time=''; }
+  const epg = !!prog;
+  return {n,name,abbr,cat,prog,time:epg?time:'',fav,epg,noEpg:!epg,progLine:epg?'Ahora · '+prog:'Sin guía de programación',progShort:epg?prog:'Sin guía de programación'};
+});
+const MODES = [
+  {id:'orig',label:'Original',desc:'Como llega la señal, con barras negras',w:'1440px',h:'1080px'},
+  {id:'ajustar',label:'Ajustar a pantalla',desc:'Llena toda la pantalla',w:'1920px',h:'1080px'},
+  {id:'zoom',label:'Zoom',desc:'Agranda más y recorta los bordes',w:'2400px',h:'1350px'}
+];
+const THEME = {fondo:'#1C1A19',tarjeta:'#262322',tarjetaFoco:'#3D3836',linea:'#3A3736',texto:'#F3F2F2',textoSuave:'#BAB6B6',acento:'#FF563C',aviso:'#E8B04A',falla:'#E86BB0',esquinas:0,grosorFoco:4,grosorReposo:1,escalaFoco:1.03,escalaTexto:1.1,margenPantalla:40,separacion:10,disposicion:'lista',anchoTile:300,mostrarLogos:true,anchoBarraLateral:360};
+
+function lum(h){const v=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4));return 0.2126*v[0]+0.7152*v[1]+0.0722*v[2];}
+function ratio(a,b){const x=lum(a),y=lum(b);return ((Math.max(x,y)+0.05)/(Math.min(x,y)+0.05)).toFixed(1)+':1';}
+
+class Component extends DCLogic {
+  state = { cat:'todos', focus:1, tile:2, mode:1, playing:3 };
+  componentDidMount(){
+    this.onKey = e => {
+      const k = e.key;
+      if (k==='ArrowLeft'||k==='ArrowRight'){ e.preventDefault(); this.setState(s=>({mode:Math.max(0,Math.min(2,s.mode+(k==='ArrowRight'?1:-1)))})); }
+      if (k==='ArrowUp'||k==='ArrowDown'){ e.preventDefault(); const n=Math.min(8,this.filtered().length); this.setState(s=>({focus:Math.max(0,Math.min(n-1,s.focus+(k==='ArrowDown'?1:-1)))})); }
+      if (k==='Enter'){ const c=this.filtered()[this.state.focus]; if(c) this.setState({playing:c.n}); }
+    };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentWillUnmount(){ window.removeEventListener('keydown', this.onKey); }
+  filtered(){ const c=this.state.cat; return c==='todos'?CH:c==='fav'?CH.filter(x=>x.fav):CH.filter(x=>x.cat===c); }
+  renderVals(){
+    const { cat, focus, tile, mode, playing } = this.state;
+    const scale = this.props.escalaFoco ?? 1.03;
+    const showLogos = this.props.mostrarLogos ?? true;
+    const count = id => id==='todos'?CH.length:id==='fav'?CH.filter(x=>x.fav).length:CH.filter(x=>x.cat===id).length;
+    const cats = CATS.map(([id,label])=>{ const a=id===cat; return {id,label,count:count(id),bg:a?C.TF:'transparent',bar:a?C.A:'transparent',fw:a?800:500,color:a?C.TX:C.TS,onClick:()=>this.setState({cat:id,focus:0,tile:0})}; });
+    const f = this.filtered();
+    const focusStyle = on => ({ bg:on?C.TF:C.T, ring:on?`0 0 0 4px ${C.A}`:'inset 0 0 0 1px #3A3736', tf:on?`scale(${scale})`:'none' });
+    const list = f.slice(0,8).map((c,i)=>({...c,num:String(c.n).padStart(3,'0'),isPlaying:c.n===playing,notPlaying:c.n!==playing,...focusStyle(i===focus),onEnter:()=>this.setState({focus:i}),onClick:()=>this.setState({focus:i,playing:c.n})}));
+    const tiles = f.slice(0,12).map((c,i)=>({...c,num:String(c.n).padStart(3,'0'),...focusStyle(i===tile),onEnter:()=>this.setState({tile:i}),onClick:()=>this.setState({tile:i,playing:c.n})}));
+    const pc = CH.find(x=>x.n===playing) || CH[0];
+    const m = MODES[mode];
+    const modes = MODES.map((x,i)=>({...x,key:String(i+1),bg:i===mode?C.TF:'transparent',ring:i===mode?`0 0 0 4px ${C.A}`:'none',onClick:()=>this.setState({mode:i})}));
+    const catLabel = CATS.find(c=>c[0]===cat)[1];
+    return {
+      cats, list, tiles, showLogos, modes, catLabel,
+      countLabel: `${f.length} CANALES`,
+      catsIdle: CATS.map(([id,label])=>({label,count:count(id)})),
+      vw:m.w, vh:m.h, modeLabel:m.label,
+      playName:pc.name, playProg:pc.prog, playTime:pc.time, playEpg:pc.epg, playNoEpg:!pc.epg, playPct:((pc.n*37)%70+20)+'%', playAbbr:pc.abbr, playNum:String(pc.n).padStart(3,'0'),
+      showHelp: this.props.mostrarAyuda ?? true,
+      diag:[
+        {name:'Conexión a internet',detail:'Wi-Fi 5 GHz · señal buena',status:'Correcto',color:'#FF563C'},
+        {name:'DNS',detail:'Respuesta en 18 ms',status:'Correcto',color:'#FF563C'},
+        {name:'Servidor de listas',detail:'89 canales cargados',status:'Correcto',color:'#FF563C'},
+        {name:'Velocidad de bajada',detail:'38 Mbps · alcanza para HD',status:'Correcto',color:'#FF563C'},
+        {name:'Latencia al servidor',detail:'180 ms · puede tardar al cambiar',status:'Aviso',color:'#E8B04A'},
+        {name:'Canal 004 · Cine Clásico',detail:'Sin respuesta del origen',status:'Falla',color:'#E86BB0'}
+      ],
+      json: JSON.stringify(THEME,null,2),
+      checks:[
+        {pair:'texto / tarjeta',ratio:ratio(THEME.texto,THEME.tarjeta)},
+        {pair:'texto / fondo',ratio:ratio(THEME.texto,THEME.fondo)},
+        {pair:'textoSuave / tarjeta',ratio:ratio(THEME.textoSuave,THEME.tarjeta)},
+        {pair:'acento / tarjeta',ratio:ratio(THEME.acento,THEME.tarjeta)},
+        {pair:'acento / tarjetaFoco',ratio:ratio(THEME.acento,THEME.tarjetaFoco)}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
