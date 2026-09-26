@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 
 private val Context.store by preferencesDataStore(name = "orbita")
 
@@ -63,8 +62,6 @@ object Prefs {
         )
         return snapshot
     }
-
-    fun flow(ctx: Context) = ctx.store.data.map { snapshot }
 
     suspend fun save(ctx: Context, s: AppSettings) {
         snapshot = s

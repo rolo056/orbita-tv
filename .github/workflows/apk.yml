@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   build:
@@ -19,19 +20,52 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
-      - name: Instalar componentes del SDK
-        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      # El runner de Ubuntu ya trae el SDK de Android instalado y con las
+      # licencias aceptadas. Usarlo directo evita la accion setup-android, que
+      # es exactamente donde fallaban las dos primeras corridas.
+      - name: Preparar el SDK
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "SDK en $SDK"
+          ls "$SDK/platforms" || true
+          MGR="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$MGR" ]; then
+            yes | "$MGR" --licenses >/dev/null 2>&1 || true
+            "$MGR" --install "platforms;android-35" "build-tools;35.0.0" || true
+          fi
 
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
 
-      # Firmado con la clave de depuracion que genera AGP: el APK se instala a
-      # mano en el televisor, no pasa por Play Store.
       - name: Compilar
-        run: gradle assembleRelease --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          gradle assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
+
+      # Temporal, mientras el build no pase: los logs de Actions piden permisos
+      # de administrador, asi que el error se publica como issue del repo, que
+      # si se puede leer desde afuera. Se quita en cuanto compile en verde.
+      - name: Publicar el error donde se pueda leer
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "Corrida ${{ github.run_id }} · commit ${{ github.sha }}"
+            echo
+            echo '### Errores de compilacion'
+            echo '```'
+            grep -E "^(e:|w:|error:|FAILURE:|Caused by:)" build.log | head -60 || echo "sin lineas de error reconocibles"
+            echo '```'
+            echo '### Final del log'
+            echo '```'
+            tail -100 build.log
+            echo '```'
+          } > error.md
+          gh issue create --repo "${{ github.repository }}" \
+            --title "Build fallo: corrida ${{ github.run_id }}" \
+            --body-file error.md
 
       - name: Renombrar el APK
         run: |
@@ -49,6 +83,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ultima
-          name: Órbita TV — última compilación
+          name: Orbita TV - ultima compilacion
           prerelease: true
           files: salida/orbita-tv.apk
