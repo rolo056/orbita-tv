@@ -1,12 +1,18 @@
 # Reexportación de la marca para Android TV
 
-**Estado: falta un solo archivo.** El banner ya llegó y está instalado en la app.
-El logotipo de la barra lateral se resolvió por dentro, dibujándolo con texto real.
-Lo único que sigue faltando es el icono de la aplicación con el texto convertido a
-contornos.
+**Estado: completo. No hace falta nada más.** Este archivo queda como registro de
+qué se pidió, por qué, y cómo terminó resuelto cada pieza.
 
-> El banner del 26/09 vino perfecto: 16:9, en tres tamaños y con el texto ya
-> vectorizado. Lo que hace falta es exactamente eso mismo, aplicado al icono.
+| Pieza | Cómo quedó |
+|---|---|
+| Banner del televisor | PNG 320 × 180 en `res/drawable-xhdpi/tv_banner.png` |
+| Icono de la aplicación | PNG 192 × 192 en `res/mipmap-xxxhdpi/ic_launcher.png` |
+| Logotipo de la barra lateral | Dibujado con texto real en la app, sin archivo |
+
+El problema original —letras como texto en vez de trazos— se resolvió entregando
+PNG ya rasterizados para el icono y un SVG vectorizado para el banner. Para el
+icono el PNG es incluso preferible: evita depender de que el formato vectorial de
+Android sepa reproducir el degradado.
 
 ## El problema
 
