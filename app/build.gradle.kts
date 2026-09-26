@@ -12,8 +12,12 @@ android {
         applicationId = "com.orbita.tv"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        // El numero de compilacion es el numero de version. Asi es monotono sin
+        // que nadie lo toque a mano, y la app puede decidir si hay algo nuevo
+        // comparando dos enteros. En local queda en 1.
+        val build = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toIntOrNull() ?: 1
+        versionCode = build
+        versionName = "1.0.$build"
     }
 
     buildTypes {

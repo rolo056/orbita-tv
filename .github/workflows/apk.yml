@@ -72,6 +72,20 @@ jobs:
           mkdir -p salida
           cp app/build/outputs/apk/release/*.apk salida/orbita-tv.apk
 
+      # Lo que la app consulta al abrir para saber si hay algo nuevo. El numero
+      # de compilacion es el numero de version, asi que comparar enteros alcanza.
+      - name: Escribir version.json
+        run: |
+          cat > salida/version.json <<JSON
+          {
+            "versionCode": ${{ github.run_number }},
+            "versionName": "1.0.${{ github.run_number }}",
+            "apk": "https://github.com/${{ github.repository }}/releases/download/ultima/orbita-tv.apk",
+            "notas": "commit ${{ github.sha }}"
+          }
+          JSON
+          cat salida/version.json
+
       - uses: actions/upload-artifact@v4
         with:
           name: orbita-tv-apk
@@ -85,4 +99,6 @@ jobs:
           tag_name: ultima
           name: Orbita TV - ultima compilacion
           prerelease: true
-          files: salida/orbita-tv.apk
+          files: |
+            salida/orbita-tv.apk
+            salida/version.json

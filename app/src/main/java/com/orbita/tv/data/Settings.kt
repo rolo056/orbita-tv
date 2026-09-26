@@ -48,4 +48,23 @@ data class AppSettings(
     val account: Account = Account(),
     val net: NetSettings = NetSettings(),
     val lastChannelId: Int = -1,
-)
+    /** De donde se lee la apariencia. Ver Skin y SkinSource. */
+    val skinUrl: String = DEFAULT_SKIN_URL,
+    /**
+     * Modo diseno: consulta el tema cada pocos segundos en vez de una sola vez
+     * al abrir, para poder trabajar la apariencia viendo el televisor cambiar.
+     * Apagado en uso normal: no tiene sentido pedir el tema cada 3 segundos
+     * durante horas de television.
+     */
+    val liveDesign: Boolean = false,
+) {
+    companion object {
+        /**
+         * Por omision, el tema del repositorio. Sirve sin montar nada, aunque la
+         * cache de raw.githubusercontent tarda unos minutos en propagar; para
+         * iterar diseno conviene apuntar a un servidor propio.
+         */
+        const val DEFAULT_SKIN_URL =
+            "https://raw.githubusercontent.com/rolo056/orbita-tv/main/tema.json"
+    }
+}

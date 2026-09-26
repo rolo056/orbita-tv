@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +34,7 @@ import com.orbita.tv.data.VariantOrder
 fun SettingsScreen(
     settings: AppSettings,
     onChange: (AppSettings) -> Unit,
+    onReloadSkin: () -> Unit,
     onForget: () -> Unit,
     onExit: () -> Unit,
 ) {
@@ -160,6 +163,52 @@ fun SettingsScreen(
                 "Es la forma de confirmar un bloqueo por zona.",
             value = net.allowIpLookup,
         ) { onChange(settings.copy(net = net.copy(allowIpLookup = it))) }
+
+        Spacer(Modifier.height(8.dp))
+        SectionTitle("APARIENCIA")
+        Hint(
+            "La apariencia se lee de un archivo, así que se puede cambiar sin volver a " +
+                "instalar la app. Lo que el archivo no diga se queda como está de fábrica, " +
+                "y un valor mal escrito se descarta: no hay forma de dejar la pantalla inservible."
+        )
+        OutlinedTextField(
+            value = settings.skinUrl,
+            onValueChange = { onChange(settings.copy(skinUrl = it.trim())) },
+            label = { Text("Dirección del archivo de apariencia", fontSize = 13.sp) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Tint.cardFocused,
+                unfocusedContainerColor = Tint.card,
+                focusedIndicatorColor = Tint.accent,
+                unfocusedIndicatorColor = Tint.line,
+                focusedLabelColor = Tint.accent,
+                unfocusedLabelColor = Tint.textSoft,
+                focusedTextColor = Tint.text,
+                unfocusedTextColor = Tint.text,
+                cursorColor = Tint.accent,
+            ),
+        )
+        Toggle(
+            title = "Modo diseño",
+            detail = "Consulta la apariencia cada 3 segundos en vez de una sola vez al abrir. " +
+                "Déjalo apagado para ver televisión: no tiene sentido pedir el archivo cada " +
+                "3 segundos durante horas.",
+            value = settings.liveDesign,
+        ) { onChange(settings.copy(liveDesign = it)) }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            FocusRow(onClick = onReloadSkin, modifier = Modifier.width(260.dp)) {
+                Text("Recargar apariencia ahora", color = Tint.text, fontSize = 16.sp)
+            }
+            FocusRow(
+                onClick = {
+                    onChange(settings.copy(skinUrl = AppSettings.DEFAULT_SKIN_URL))
+                },
+                modifier = Modifier.width(240.dp),
+            ) {
+                Text("Volver al archivo del repo", color = Tint.textSoft, fontSize = 15.sp)
+            }
+        }
 
         Spacer(Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

@@ -30,6 +30,8 @@ object Prefs {
     private val kBuffering = intPreferencesKey("buffering")
     private val kIpLookup = booleanPreferencesKey("iplookup")
     private val kLastChannel = intPreferencesKey("lastChannel")
+    private val kSkinUrl = stringPreferencesKey("skinUrl")
+    private val kLiveDesign = booleanPreferencesKey("liveDesign")
 
     @Volatile
     var snapshot: AppSettings = AppSettings()
@@ -59,6 +61,8 @@ object Prefs {
                 allowIpLookup = p[kIpLookup] ?: false,
             ),
             lastChannelId = p[kLastChannel] ?: -1,
+            skinUrl = p[kSkinUrl] ?: AppSettings.DEFAULT_SKIN_URL,
+            liveDesign = p[kLiveDesign] ?: false,
         )
         return snapshot
     }
@@ -81,6 +85,8 @@ object Prefs {
             p[kBuffering] = s.net.bufferingSeconds
             p[kIpLookup] = s.net.allowIpLookup
             p[kLastChannel] = s.lastChannelId
+            p[kSkinUrl] = s.skinUrl
+            p[kLiveDesign] = s.liveDesign
         }
     }
 

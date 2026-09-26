@@ -1,0 +1,38 @@
+{
+  "_lee_esto": "Cada clave es opcional. Lo que borres vuelve al valor de fábrica, y un valor mal escrito se descarta sin romper nada. Los colores aceptan #RGB, #RRGGBB y #AARRGGBB.",
+
+  "fondo": "#0B1020",
+  "tarjeta": "#141E33",
+  "tarjetaFoco": "#1E2C49",
+  "linea": "#243352",
+  "texto": "#E8EDF5",
+  "textoSuave": "#9BA7BD",
+  "acento": "#5FC9A0",
+  "aviso": "#E0B252",
+  "falla": "#E2705F",
+
+  "_forma": "esquinas y grosores en dp. escalaFoco agranda la fila enfocada: 1 la deja igual, 1.04 se nota sin marear.",
+  "esquinas": 10,
+  "grosorFoco": 2,
+  "grosorReposo": 1,
+  "escalaFoco": 1,
+
+  "_texto": "escalaTexto multiplica TODOS los tamaños de letra de una vez. fuenteUrl apunta a un .ttf; si no carga, se usa la del sistema.",
+  "escalaTexto": 1,
+  "fuenteUrl": null,
+
+  "_espacio": "en dp",
+  "margenPantalla": 24,
+  "separacion": 8,
+
+  "_canales": "disposicion: lista o mosaico. anchoTile es el ancho mínimo de cada tarjeta en mosaico, y las columnas se acomodan solas al tamaño de la pantalla.",
+  "disposicion": "lista",
+  "anchoTile": 260,
+  "mostrarLogos": true,
+  "anchoBarraLateral": 300,
+
+  "_marca": "logoUrl reemplaza el texto Órbita TV de la barra lateral. fondoImagenUrl va detrás de todo; con opacidad alta el texto se vuelve ilegible, 0.15 a 0.3 funciona.",
+  "logoUrl": null,
+  "fondoImagenUrl": null,
+  "fondoImagenOpacidad": 0.25
+}

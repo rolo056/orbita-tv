@@ -16,15 +16,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
 import com.orbita.tv.data.Account
 import com.orbita.tv.data.AppSettings
 import com.orbita.tv.data.Prefs
+import com.orbita.tv.data.Skin
 import com.orbita.tv.diag.DiagReport
 import com.orbita.tv.diag.Diagnostics
 import com.orbita.tv.diag.Finding
 import com.orbita.tv.net.Category
 import com.orbita.tv.net.Channel
+import com.orbita.tv.net.SkinSource
+import com.orbita.tv.net.UpdateInfo
+import com.orbita.tv.net.Updater
 import com.orbita.tv.net.Xtream
 import com.orbita.tv.player.PlaybackStats
 import com.orbita.tv.player.ResilientPlayer
@@ -45,6 +52,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             OrbitaTheme {
                 Box(Modifier.fillMaxSize().background(Tint.bg)) {
+                    // Fondo remoto opcional. Va detras de todo y con opacidad
+                    // propia, porque una foto a pantalla completa detras de
+                    // texto claro arruina la legibilidad muy rapido.
+                    val fondo = Tint.skin.bgImageUrl
+                    if (fondo != null) {
+                        AsyncImage(
+                            model = fondo,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha(Tint.skin.bgImageAlpha),
+                        )
+                    }
                     App()
                 }
             }
@@ -60,6 +81,7 @@ private fun App() {
     var settings by remember { mutableStateOf(AppSettings()) }
     var screen by remember { mutableStateOf(Screen.LOGIN) }
     var booted by remember { mutableStateOf(false) }
+    var skinReload by remember { mutableStateOf(0) }
 
     var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
     var channels by remember { mutableStateOf<List<Channel>>(emptyList()) }
@@ -67,6 +89,9 @@ private fun App() {
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var playingIndex by remember { mutableStateOf(0) }
+
+    var update by remember { mutableStateOf<UpdateInfo?>(null) }
+    var updating by remember { mutableStateOf(false) }
 
     val findings = remember { mutableStateListOf<Finding>() }
     var report by remember { mutableStateOf<DiagReport?>(null) }
@@ -99,6 +124,36 @@ private fun App() {
         } finally {
             loading = false
         }
+    }
+
+    // La apariencia. Arranca con lo ultimo que se descargo bien, para que el
+    // televisor no muestre un diseno viejo mientras espera a la red, y despues
+    // consulta el servidor. En modo diseno sigue consultando cada 3 segundos.
+    LaunchedEffect(booted, settings.skinUrl, settings.liveDesign, skinReload) {
+        if (!booted) return@LaunchedEffect
+        SkinSource.cached(ctx)?.let { Tint.skin = Skin.merge(Skin.DEFAULT, it) }
+        Tint.fontFamily = SkinSource.font(ctx, Tint.skin.fontUrl, settings.net)
+        while (true) {
+            val raw = SkinSource.fetch(ctx, settings.skinUrl, settings.net)
+            if (raw != null) {
+                val next = Skin.merge(Skin.DEFAULT, raw)
+                if (next != Tint.skin) {
+                    val fuenteCambio = next.fontUrl != Tint.skin.fontUrl
+                    Tint.skin = next
+                    if (fuenteCambio) {
+                        Tint.fontFamily = SkinSource.font(ctx, next.fontUrl, settings.net)
+                    }
+                }
+            }
+            if (!settings.liveDesign) break
+            kotlinx.coroutines.delay(3_000)
+        }
+    }
+
+    // Una sola consulta al abrir. No hay razon para volver a preguntar mientras
+    // la app esta en uso: quien esta mirando un canal no quiere un aviso encima.
+    LaunchedEffect(booted) {
+        if (booted) update = Updater.check(ctx, settings.net)
     }
 
     LaunchedEffect(Unit) {
@@ -160,6 +215,19 @@ private fun App() {
                 screen = Screen.DIAGNOSTICS
             },
             onSettings = { screen = Screen.SETTINGS },
+            update = update,
+            updating = updating,
+            onUpdate = {
+                val info = update
+                if (info != null && !updating) {
+                    updating = true
+                    scope.launch {
+                        val file = Updater.download(ctx, info, settings.net)
+                        updating = false
+                        if (file != null) Updater.install(ctx, file)
+                    }
+                }
+            },
         )
 
         Screen.PLAYER -> {
@@ -203,6 +271,7 @@ private fun App() {
                 engine?.updateSettings(s)
                 scope.launch { Prefs.save(ctx, s) }
             },
+            onReloadSkin = { skinReload++ },
             onForget = {
                 scope.launch {
                     engine?.release()

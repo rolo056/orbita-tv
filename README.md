@@ -61,6 +61,40 @@ La cifra que importa no es el promedio de caudal: es **la pausa más larga sin
 datos**. Un promedio bueno con una pausa de cuatro segundos es exactamente lo
 que congela la imagen en un reproductor sin vigilante.
 
+## Cambiar la apariencia sin reinstalar
+
+La apariencia sale de [tema.json](tema.json), no del código. La app lo lee al
+abrir y aplica lo que diga encima de los valores de fábrica.
+
+La regla que lo hace seguro: **el archivo no reemplaza el tema, lo pisa campo por
+campo**. Una clave que no exista, un color mal escrito o un número fuera de rango
+se descartan y ese campo conserva su valor. No hay forma de dejar el televisor
+con una pantalla inservible por un error de tipeo.
+
+Se puede cambiar por datos: colores, esquinas, grosor y color del anillo de foco,
+escala de todos los textos de una vez, tipografía (un `.ttf` remoto), márgenes,
+lista contra mosaico, ancho de las tarjetas, mostrar u ocultar logos, ancho de la
+barra lateral, logo de marca e imagen de fondo con su opacidad.
+
+Necesita APK nuevo: pantallas nuevas, controles nuevos y cualquier cambio de
+estructura que no esté previsto como opción.
+
+**Modo diseño** (Ajustes): consulta el archivo cada 3 segundos en vez de una sola
+vez al abrir, así se trabaja el diseño viendo el televisor cambiar. Déjalo
+apagado para ver televisión.
+
+Tres capas, en este orden, y por eso la app nunca arranca fea: lo que trae el
+APK, lo último que se descargó bien (guardado en disco, sirve sin red), y lo que
+responda el servidor ahora.
+
+## Actualización del APK
+
+Cada compilación publica un `version.json` junto al APK, con el número de
+compilación como número de versión. La app lo consulta al abrir y, si hay algo
+nuevo, ofrece descargarlo e instalarlo con un OK del mando. Sigue siendo una
+instalación —Android siempre pide confirmación— pero sin Downloader y sin
+escribir direcciones.
+
 ## Los ajustes, y qué falla arregla cada uno
 
 | Ajuste | Cuándo tocarlo |
