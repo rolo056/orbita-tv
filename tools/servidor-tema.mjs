@@ -168,6 +168,14 @@ function paginaEditor(tema) {
   #estado { position:fixed; right:20px; bottom:20px; background:#141e33;
             border:1px solid #243352; border-radius:8px; padding:10px 14px;
             font-size:13px; color:#9ba7bd; }
+  #pegar { margin:0 0 8px; }
+  #pegar textarea { width:100%; min-height:120px; background:#141e33; color:#e8edf5;
+                    border:1px solid #243352; border-radius:8px; padding:10px;
+                    font:13px/1.5 ui-monospace,Consolas,monospace; resize:vertical; }
+  #pegar button { margin-top:8px; background:#5fc9a0; color:#0b1020; border:0;
+                  border-radius:8px; padding:9px 18px; font-size:14px;
+                  font-weight:600; cursor:pointer; }
+  #pegar .aviso { color:#e2705f; font-size:13px; min-height:19px; margin-top:6px; }
 </style></head>
 <body>
 <header>
@@ -175,7 +183,16 @@ function paginaEditor(tema) {
   <p class="sub">Cada cambio se guarda en tema.json. Con Modo diseño activado, el
   televisor lo toma en 3 segundos.</p>
 </header>
-<main>${controles}</main>
+<main>
+  <h2>Pegar un diseño</h2>
+  <div id="pegar">
+    <p class="sub">Pegá acá el JSON que devolvió quien diseñó la apariencia y aplicalo.
+    Solo entran las claves conocidas; lo demás se ignora.</p>
+    <textarea id="json" placeholder='{ "fondo": "#0E1116", "acento": "#C9A227" }'></textarea>
+    <div class="aviso" id="avisoPegar"></div>
+    <button id="aplicar">Aplicar al televisor</button>
+  </div>
+${controles}</main>
 <div id="estado">sin cambios</div>
 <script>
   const estado = document.getElementById('estado');
@@ -204,6 +221,41 @@ function paginaEditor(tema) {
       estado.textContent = 'sin conexion con el servidor';
     }
   }
+
+  // Aplicar un JSON pegado. Se manda tal cual al servidor, que ya conserva las
+  // notas del archivo y descarta lo que no reconoce; despues se recarga la
+  // pagina para que los controles muestren los valores nuevos.
+  document.getElementById('aplicar').addEventListener('click', async () => {
+    const aviso = document.getElementById('avisoPegar');
+    const texto = document.getElementById('json').value.trim();
+    if (!texto) {
+      aviso.textContent = 'No hay nada pegado.';
+      return;
+    }
+    let datos;
+    try {
+      datos = JSON.parse(texto);
+    } catch (e) {
+      aviso.textContent = 'Eso no es JSON válido: ' + e.message;
+      return;
+    }
+    if (typeof datos !== 'object' || datos === null || Array.isArray(datos)) {
+      aviso.textContent = 'Se espera un objeto JSON, con claves y valores.';
+      return;
+    }
+    aviso.textContent = '';
+    estado.textContent = 'aplicando...';
+    const r = await fetch('/tema.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos),
+    });
+    if (r.ok) {
+      location.reload();
+    } else {
+      aviso.textContent = 'El servidor lo rechazó.';
+    }
+  });
 
   for (const el of document.querySelectorAll('[data-k]')) {
     el.addEventListener('input', () => {
