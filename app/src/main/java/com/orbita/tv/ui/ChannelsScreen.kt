@@ -73,12 +73,7 @@ fun ChannelsScreen(
                     modifier = Modifier.height(40.dp),
                 )
             } else {
-                Text(
-                    "ALEX TV",
-                    color = Tint.text,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                BrandMark(size = 22.sp)
             }
             Spacer(Modifier.height(4.dp))
             // El aviso de version nueva solo aparece cuando hay una, y arriba,

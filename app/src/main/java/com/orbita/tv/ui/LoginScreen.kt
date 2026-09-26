@@ -52,7 +52,7 @@ fun LoginScreen(
             .padding(horizontal = 48.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text("ALEX TV", color = Tint.text, fontSize = 30.sp, fontWeight = FontWeight.SemiBold)
+        BrandMark(size = 30.sp)
         Hint("Conecta tu lista Xtream. Los datos quedan solo en este televisor.")
 
         Spacer(Modifier.height(8.dp))
