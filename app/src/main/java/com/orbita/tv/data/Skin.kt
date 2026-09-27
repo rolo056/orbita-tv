@@ -36,6 +36,8 @@ data class Skin(
     // Tipografia. escalaTexto multiplica TODOS los tamanos de una sola vez,
     // sin tener que parametrizar cada pantalla.
     val fontUrl: String? = null,
+    /** Peso pesado, para titulos y nombres de canal. Opcional. */
+    val fontUrlBold: String? = null,
     val fontScale: Float = 1f,
 
     // Espaciado
@@ -80,6 +82,7 @@ data class Skin(
                 focusScale = o.num("escalaFoco", base.focusScale, 1f, 1.15f),
 
                 fontUrl = o.str("fuenteUrl", base.fontUrl),
+                fontUrlBold = o.str("fuenteUrlNegrita", base.fontUrlBold),
                 fontScale = o.num("escalaTexto", base.fontScale, 0.7f, 1.6f),
 
                 screenPad = o.num("margenPantalla", base.screenPad, 0f, 80f),

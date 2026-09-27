@@ -111,3 +111,16 @@ jobs:
           files: |
             salida/orbita-tv.apk
             salida/version.json
+
+      # Ademas de "ultima", cada compilacion queda publicada con su propio
+      # numero. Sin esto, una version mala sobrescribe a la buena y no hay forma
+      # comoda de volver atras desde un televisor.
+      - name: Publicar tambien con numero de version
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: ALEX TV 1.0.${{ github.run_number }}
+          prerelease: true
+          files: |
+            salida/orbita-tv.apk
+            salida/version.json

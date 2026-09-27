@@ -29,6 +29,7 @@ const ESQUEMA = {
   escalaFoco: { t: 'num', min: 1, max: 1.15 },
   escalaTexto: { t: 'num', min: 0.7, max: 1.6 },
   fuenteUrl: { t: 'url' },
+  fuenteUrlNegrita: { t: 'url' },
   margenPantalla: { t: 'num', min: 0, max: 80 },
   separacion: { t: 'num', min: 0, max: 40 },
   disposicion: { t: 'enum', valores: ['lista', 'mosaico'] },

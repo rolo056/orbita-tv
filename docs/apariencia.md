@@ -89,7 +89,8 @@ tres colores tienen que distinguirse entre sí a tres metros.
 | `grosorReposo` | número (dp) | 0 – 8 | `1` | Grosor del borde en reposo |
 | `escalaFoco` | número | 1 – 1.15 | `1` | Cuánto crece la fila enfocada |
 | `escalaTexto` | número | 0.7 – 1.6 | `1` | Multiplica **todos** los textos a la vez |
-| `fuenteUrl` | texto o `null` | — | `null` | Un `.ttf` accesible por HTTP |
+| `fuenteUrl` | texto o `null` | — | `null` | Peso normal. Un `.ttf` accesible por HTTP |
+| `fuenteUrlNegrita` | texto o `null` | — | `null` | Peso pesado, para títulos y nombres de canal |
 | `margenPantalla` | número (dp) | 0 – 80 | `24` | Margen exterior |
 | `separacion` | número (dp) | 0 – 40 | `8` | Espacio entre filas y tarjetas |
 | `disposicion` | `"lista"` o `"mosaico"` | — | `"lista"` | Cómo se listan los canales |
@@ -183,7 +184,12 @@ Ejemplo de respuesta válida:
 }
 ```
 
-Si además querés proponer una tipografía, el valor de `fuenteUrl` tiene que ser
-un enlace directo a un archivo `.ttf` que responda por HTTP sin redirecciones a
-una página. Un enlace a la ficha de una fuente en un sitio web no sirve: tiene que
-ser el archivo.
+Si además querés proponer una tipografía, hacen falta **dos** archivos `.ttf`:
+uno de peso normal para el cuerpo y uno pesado para títulos y nombres de canal.
+Con un solo peso pesado el texto secundario queda ilegible a tres metros.
+
+Los dos enlaces tienen que apuntar al archivo directamente y responder por HTTP
+sin redirigir a una página. Un enlace a la ficha de una fuente en un sitio web no
+sirve. Si alguno no es una fuente válida, se descarta y se usa la del sistema: la
+app comprueba la firma del archivo y obliga a Android a interpretarlo antes de
+aplicarlo, justamente para que una descarga rota no deje la interfaz sin dibujar.

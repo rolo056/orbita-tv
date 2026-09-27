@@ -109,15 +109,19 @@ private fun App() {
     LaunchedEffect(booted, settings.skinUrl, settings.liveDesign, skinReload) {
         if (!booted) return@LaunchedEffect
         SkinSource.cached(ctx)?.let { Tint.skin = Skin.merge(Skin.DEFAULT, it) }
-        Tint.fontFamily = SkinSource.font(ctx, Tint.skin.fontUrl, settings.net)
+        Tint.fontFamily = SkinSource.font(ctx, Tint.skin.fontUrl, Tint.skin.fontUrlBold, settings.net)
         while (true) {
             val raw = SkinSource.fetch(ctx, settings.skinUrl, settings.net)
             if (raw != null) {
                 val next = Skin.merge(Skin.DEFAULT, raw)
                 if (next != Tint.skin) {
-                    val fuenteCambio = next.fontUrl != Tint.skin.fontUrl
+                    val fuenteCambio = next.fontUrl != Tint.skin.fontUrl ||
+                        next.fontUrlBold != Tint.skin.fontUrlBold
                     Tint.skin = next
-                    if (fuenteCambio) Tint.fontFamily = SkinSource.font(ctx, next.fontUrl, settings.net)
+                    if (fuenteCambio) {
+                        Tint.fontFamily =
+                            SkinSource.font(ctx, next.fontUrl, next.fontUrlBold, settings.net)
+                    }
                 }
             }
             if (!settings.liveDesign) break
