@@ -38,6 +38,7 @@ fun LoginScreen(
     error: String?,
     busy: Boolean,
     onSave: (Account) -> Unit,
+    onDiagnostics: () -> Unit,
 ) {
     var host by remember { mutableStateOf(initial.host) }
     var port by remember { mutableStateOf(if (initial.port > 0) initial.port.toString() else "80") }
@@ -85,6 +86,16 @@ fun LoginScreen(
             Text(error, color = Tint.fail, fontSize = 14.sp)
         }
 
+        Spacer(Modifier.height(8.dp))
+        // El diagnostico tiene que alcanzarse desde aqui. Si la conexion falla
+        // no se pasa de esta pantalla, y sin esto quedarias encerrado sin la
+        // unica herramienta que explica por que falla.
+        FocusRow(onClick = onDiagnostics, modifier = Modifier.fillMaxWidth()) {
+            Column {
+                Text("Diagnóstico de red", color = Tint.text, fontSize = 16.sp)
+                Hint("Si no conecta, esto dice por qué")
+            }
+        }
         Spacer(Modifier.height(8.dp))
         FocusRow(
             onClick = {

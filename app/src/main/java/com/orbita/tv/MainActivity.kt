@@ -98,6 +98,7 @@ private fun App() {
     val findings = remember { mutableStateListOf<Finding>() }
     var report by remember { mutableStateOf<DiagReport?>(null) }
     var diagRunning by remember { mutableStateOf(false) }
+    var volverDeDiag by remember { mutableStateOf(Screen.HOME) }
 
     // Un solo motor de reproduccion para toda la sesion. Es lo que permite que
     // la vista previa y la pantalla completa sean el mismo stream y una sola
@@ -224,6 +225,12 @@ private fun App() {
                     if (error == null) screen = Screen.HOME
                 }
             },
+            onDiagnostics = {
+                findings.clear()
+                report = null
+                volverDeDiag = Screen.LOGIN
+                screen = Screen.DIAGNOSTICS
+            },
         )
 
         Screen.HOME -> HomeScreen(
@@ -241,6 +248,7 @@ private fun App() {
             onDiagnostics = {
                 findings.clear()
                 report = null
+                volverDeDiag = Screen.HOME
                 screen = Screen.DIAGNOSTICS
             },
             onSettings = { screen = Screen.SETTINGS },
@@ -275,7 +283,7 @@ private fun App() {
                     }
                 }
             },
-            onExit = { screen = Screen.HOME },
+            onExit = { screen = volverDeDiag },
         )
 
         Screen.SETTINGS -> SettingsScreen(
