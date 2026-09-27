@@ -105,6 +105,30 @@ Tres capas, en este orden, y por eso la app nunca arranca fea: lo que trae el
 APK, lo último que se descargó bien (guardado en disco, sirve sin red), y lo que
 responda el servidor ahora.
 
+## Ver los canales en el navegador
+
+```
+node tools/visor-web.mjs
+```
+
+Abre `http://localhost:8788`. Es un visor, no la app: sirve para mirar un canal
+desde la computadora y, sobre todo, para comprobar el panel cuando algo falla en
+el televisor.
+
+Toma los colores de `tema.json`, así que se ve como la app, y trae la misma idea
+de aguante en versión simplificada: plazo de arranque de 9 s, caída de HLS a TS,
+vigilante de imagen congelada y rondas lentas que no se rinden.
+
+Hace falta el servidor y no alcanza abrir un HTML suelto por una razón concreta:
+el panel envía `Access-Control-Allow-Origin: *` en el video pero **no** en
+`player_api.php`, así que el navegador bloquea la petición de la lista. El
+servidor hace de intermediario solo para eso; el video va directo del panel al
+navegador, sin pasar por él.
+
+Lo que el navegador no puede hacer solo: Chrome no reproduce HLS de forma nativa
+y ningún navegador reproduce TS crudo. De ahí las dos librerías que carga la
+página.
+
 ## Actualización del APK
 
 Cada compilación publica un `version.json` junto al APK, con el número de
