@@ -120,6 +120,33 @@ class Xtream(private val account: Account, net: NetSettings) {
 
     companion object {
         /**
+         * Puertos por los que suele responder el mismo panel, en orden de menos
+         * a mas probable de estar bloqueado. El 80 primero porque es el que
+         * ninguna red bloquea: si el navegador del aparato abre paginas, el 80
+         * pasa.
+         */
+        val PUERTOS_ALTERNATIVOS = listOf(80, 8080, 8000, 443, 2082, 25461)
+
+        /**
+         * Busca un puerto por el que el panel si conteste desde ESTA red.
+         *
+         * Existe por un caso real y medido: el panel escuchaba en 25461 y en 80
+         * a la vez, y desde Starlink y desde datos moviles el 25461 no abria
+         * mientras el 80 respondia al instante. El sintoma era "no cargan los
+         * canales" y la causa no tenia nada que ver con el proveedor ni con la
+         * cuenta: era el puerto.
+         */
+        suspend fun puertoQueResponde(account: Account, net: NetSettings): Int? {
+            for (puerto in PUERTOS_ALTERNATIVOS) {
+                if (puerto == account.port) continue
+                val prueba = account.copy(port = puerto, https = puerto == 443)
+                val ok = runCatching { Xtream(prueba, net).status().authOk }.getOrDefault(false)
+                if (ok) return puerto
+            }
+            return null
+        }
+
+        /**
          * Traduce el fallo a algo que se pueda actuar. Un
          * "failed to connect to /80.80.90.95 (port 25461) after 15000ms" en
          * pantalla no le dice nada a nadie, y ademas lleva a la conclusion

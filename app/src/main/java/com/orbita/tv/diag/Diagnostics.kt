@@ -39,6 +39,7 @@ private enum class Cause {
     CUENTA_OCUPADA, // el panel ya tiene abiertas todas las conexiones permitidas
     PUERTO_CERRADO, // el puerto raro del panel no responde
     ENLACE_INESTABLE, // conecta pero el caudal se corta a cada rato
+    PUERTO_ALTERNATIVO, // el puerto configurado no pasa, pero otro del mismo panel si
 }
 
 object Diagnostics {
@@ -122,6 +123,24 @@ object Diagnostics {
             }
             if (!v4Reachable && !v6Reachable) {
                 causes.add(Cause.PUERTO_CERRADO)
+                // No basta con decir que el puerto no responde: el mismo panel
+                // suele escuchar tambien en uno estandar. Buscarlo convierte el
+                // diagnostico en una solucion.
+                val otro = com.orbita.tv.net.Xtream.puertoQueResponde(account, net)
+                if (otro != null) {
+                    causes.add(Cause.PUERTO_ALTERNATIVO)
+                    emit(
+                        "Otro puerto que si responde", Level.OK,
+                        "El puerto " + account.port + " no abre desde esta red, pero el " +
+                            otro + " del mismo servidor contesta con la misma cuenta. " +
+                            "La app se cambia sola al recargar; tambien puedes ponerlo a mano."
+                    )
+                } else {
+                    emit(
+                        "Otros puertos", Level.FAIL,
+                        "Se probaron los puertos habituales y ninguno responde desde esta red."
+                    )
+                }
             }
 
             // ---------- 3. La cuenta, segun el propio panel ----------
@@ -343,6 +362,8 @@ object Diagnostics {
                 "El proveedor esta bloqueando la salida de Starlink"
             Cause.IPV6_ROTO in causes ->
                 "IPv6 roto del lado del servidor"
+            Cause.PUERTO_ALTERNATIVO in causes ->
+                "El puerto configurado no pasa por esta red, pero hay otro que si"
             Cause.PUERTO_CERRADO in causes ->
                 "El puerto del panel no responde"
             else ->
@@ -365,7 +386,13 @@ object Diagnostics {
         if (Cause.IPV6_ROTO in causes) {
             advice.add("Deja \"Forzar IPv4\" activado: evita el intento a IPv6 que se cuelga.")
         }
-        if (Cause.PUERTO_CERRADO in causes) {
+        if (Cause.PUERTO_ALTERNATIVO in causes) {
+            advice.add(
+                "Cambia el puerto por el que si responde. No es culpa del proveedor ni " +
+                    "de la cuenta: esta red no deja salir por el puerto que estaba puesto, " +
+                    "igual que deja pasar el navegador sin problema."
+            )
+        } else if (Cause.PUERTO_CERRADO in causes) {
             advice.add("Confirma host y puerto con el proveedor; los paneles usan 8080, 8000 o 25461.")
             advice.add("Si el nombre no resuelve, activa DNS sobre HTTPS en Ajustes.")
         }

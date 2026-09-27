@@ -87,6 +87,7 @@ private fun App() {
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var aviso by remember { mutableStateOf<String?>(null) }
 
     var update by remember { mutableStateOf<UpdateInfo?>(null) }
     var updating by remember { mutableStateOf(false) }
@@ -141,8 +142,24 @@ private fun App() {
             categories = runCatching { xt.categories() }.getOrDefault(emptyList())
             allChannels = xt.channels(null)
         } catch (e: Exception) {
-            error = Xtream.mensajeAmigable(e)
-            allChannels = emptyList()
+            // Antes de rendirse: puede que el panel conteste por otro puerto.
+            // Ver Xtream.puertoQueResponde, que existe por un caso real.
+            val otro = if (e is java.net.SocketTimeoutException || e is java.net.ConnectException) {
+                Xtream.puertoQueResponde(settings.account, settings.net)
+            } else null
+            if (otro != null) {
+                settings = settings.copy(account = settings.account.copy(port = otro))
+                Prefs.save(ctx, settings)
+                val xt2 = Xtream(settings.account, settings.net)
+                categories = runCatching { xt2.categories() }.getOrDefault(emptyList())
+                allChannels = runCatching { xt2.channels(null) }.getOrDefault(emptyList())
+                error = if (allChannels.isEmpty()) Xtream.mensajeAmigable(e) else null
+                aviso = "El puerto anterior no responde desde esta red. " +
+                    "Se cambio al " + otro + ", que si contesta."
+            } else {
+                error = Xtream.mensajeAmigable(e)
+                allChannels = emptyList()
+            }
         } finally {
             loading = false
         }
@@ -207,6 +224,7 @@ private fun App() {
                 screen = Screen.DIAGNOSTICS
             },
             onSettings = { screen = Screen.SETTINGS },
+            notice = aviso,
             update = update,
             updating = updating,
             onUpdate = {

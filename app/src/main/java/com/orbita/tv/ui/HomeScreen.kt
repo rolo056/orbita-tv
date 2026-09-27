@@ -99,6 +99,7 @@ fun HomeScreen(
     update: UpdateInfo?,
     updating: Boolean,
     onUpdate: () -> Unit,
+    notice: String? = null,
 ) {
     val skin = Tint.skin
     val esTv = isTvDevice()
@@ -178,6 +179,7 @@ fun HomeScreen(
                 seleccionada = selectedCategory, visibles = visibles,
                 loading = loading, error = error, enVentana = enVentana, stats = stats,
                 update = update, updating = updating, onUpdate = onUpdate,
+                notice = notice,
                 onCategory = onCategory, onAbrir = { abrir(it) },
                 onFavorito = onToggleFavorite,
                 onDiagnostics = onDiagnostics, onSettings = onSettings,
@@ -291,6 +293,7 @@ private fun Contenido(
     update: UpdateInfo?,
     updating: Boolean,
     onUpdate: () -> Unit,
+    notice: String?,
     onCategory: (String?) -> Unit,
     onAbrir: (Channel) -> Unit,
     onFavorito: (Channel) -> Unit,
@@ -333,6 +336,7 @@ private fun Contenido(
                 }
             }
             Spacer(Modifier.height(skin.gap.dp))
+            Aviso(notice)
             Lista(visibles, favoritos, loading, error, skin, enVentana, onAbrir, onFavorito)
         }
         return
@@ -402,6 +406,7 @@ private fun Contenido(
                 Text(hora, color = Tint.text, fontSize = 22.sp, fontWeight = FontWeight.Medium)
             }
             Spacer(Modifier.height(14.dp))
+            Aviso(notice)
             Box(Modifier.weight(1f)) {
                 Lista(visibles, favoritos, loading, error, skin, enVentana, onAbrir, onFavorito)
             }
@@ -576,6 +581,18 @@ private fun Chip(texto: String, activa: Boolean, onClick: () -> Unit) {
             maxLines = 1,
         )
     }
+}
+
+/** Algo que la app resolvio sola y conviene que se sepa. No es un error. */
+@Composable
+private fun Aviso(texto: String?) {
+    if (texto == null) return
+    Column(
+        Modifier.fillMaxWidth().background(Tint.card).padding(12.dp),
+    ) {
+        Text(texto, color = Tint.accent, fontSize = 14.sp)
+    }
+    Spacer(Modifier.height(10.dp))
 }
 
 @Composable
