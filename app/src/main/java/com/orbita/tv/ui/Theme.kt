@@ -2,7 +2,7 @@ package com.orbita.tv.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -107,6 +107,9 @@ fun FocusRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     padding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+    /** Mantener OK, o mantener el dedo. Se usa para marcar favoritos. */
+    onLongClick: (() -> Unit)? = null,
+    onFocus: (() -> Unit)? = null,
     content: @Composable (focused: Boolean) -> Unit,
 ) {
     val skin = Tint.skin
@@ -114,8 +117,11 @@ fun FocusRow(
     val shape = RoundedCornerShape(skin.radius.dp)
     Box(
         modifier = modifier
-            .onFocusChanged { focused = it.isFocused }
-            .clickable(onClick = onClick)
+            .onFocusChanged {
+                focused = it.isFocused
+                if (it.isFocused) onFocus?.invoke()
+            }
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .scale(if (focused) skin.focusScale else 1f)
             .background(if (focused) Tint.cardFocused else Tint.card, shape)
             .border(

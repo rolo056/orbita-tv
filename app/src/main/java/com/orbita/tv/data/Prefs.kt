@@ -32,6 +32,7 @@ object Prefs {
     private val kLastChannel = intPreferencesKey("lastChannel")
     private val kSkinUrl = stringPreferencesKey("skinUrl")
     private val kLiveDesign = booleanPreferencesKey("liveDesign")
+    private val kFavoritos = stringPreferencesKey("favoritos")
 
     @Volatile
     var snapshot: AppSettings = AppSettings()
@@ -63,6 +64,8 @@ object Prefs {
             lastChannelId = p[kLastChannel] ?: -1,
             skinUrl = p[kSkinUrl] ?: AppSettings.DEFAULT_SKIN_URL,
             liveDesign = p[kLiveDesign] ?: false,
+            favorites = (p[kFavoritos] ?: "").split(",")
+                .mapNotNull { it.trim().toIntOrNull() }.toSet(),
         )
         return snapshot
     }
@@ -87,6 +90,7 @@ object Prefs {
             p[kLastChannel] = s.lastChannelId
             p[kSkinUrl] = s.skinUrl
             p[kLiveDesign] = s.liveDesign
+            p[kFavoritos] = s.favorites.joinToString(",")
         }
     }
 

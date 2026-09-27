@@ -35,16 +35,15 @@ import com.orbita.tv.net.Updater
 import com.orbita.tv.net.Xtream
 import com.orbita.tv.player.PlaybackStats
 import com.orbita.tv.player.ResilientPlayer
-import com.orbita.tv.ui.ChannelsScreen
 import com.orbita.tv.ui.DiagnosticsScreen
+import com.orbita.tv.ui.HomeScreen
 import com.orbita.tv.ui.LoginScreen
 import com.orbita.tv.ui.OrbitaTheme
-import com.orbita.tv.ui.PlayerScreen
 import com.orbita.tv.ui.SettingsScreen
 import com.orbita.tv.ui.Tint
 import kotlinx.coroutines.launch
 
-private enum class Screen { LOGIN, CHANNELS, PLAYER, DIAGNOSTICS, SETTINGS }
+private enum class Screen { LOGIN, HOME, DIAGNOSTICS, SETTINGS }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,9 +60,7 @@ class MainActivity : ComponentActivity() {
                             model = fondo,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .alpha(Tint.skin.bgImageAlpha),
+                            modifier = Modifier.fillMaxSize().alpha(Tint.skin.bgImageAlpha),
                         )
                     }
                     App()
@@ -84,11 +81,12 @@ private fun App() {
     var skinReload by remember { mutableStateOf(0) }
 
     var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
-    var channels by remember { mutableStateOf<List<Channel>>(emptyList()) }
+    // La lista completa se pide UNA vez y se filtra aqui. Asi las categorias
+    // cambian sin esperar a la red, y los contadores por categoria salen gratis.
+    var allChannels by remember { mutableStateOf<List<Channel>>(emptyList()) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    var playingIndex by remember { mutableStateOf(0) }
 
     var update by remember { mutableStateOf<UpdateInfo?>(null) }
     var updating by remember { mutableStateOf(false) }
@@ -97,38 +95,17 @@ private fun App() {
     var report by remember { mutableStateOf<DiagReport?>(null) }
     var diagRunning by remember { mutableStateOf(false) }
 
-    // Un solo motor de reproduccion para toda la sesion: cambiar de canal no
-    // recrea el reproductor, solo le pasa otra URL. Asi el zapping es inmediato.
+    // Un solo motor de reproduccion para toda la sesion. Es lo que permite que
+    // la vista previa y la pantalla completa sean el mismo stream y una sola
+    // conexion contra el panel.
     var engine by remember { mutableStateOf<ResilientPlayer?>(null) }
     var stats by remember { mutableStateOf(PlaybackStats()) }
-    LaunchedEffect(engine) {
-        engine?.stats?.collect { stats = it }
-    }
+    LaunchedEffect(engine) { engine?.stats?.collect { stats = it } }
 
-    DisposableEffect(Unit) {
-        onDispose { engine?.release() }
-    }
+    DisposableEffect(Unit) { onDispose { engine?.release() } }
 
-    suspend fun loadChannels(categoryId: String?) {
-        loading = true
-        error = null
-        try {
-            val xt = Xtream(settings.account, settings.net)
-            if (categories.isEmpty()) {
-                categories = runCatching { xt.categories() }.getOrDefault(emptyList())
-            }
-            channels = xt.channels(categoryId)
-        } catch (e: Exception) {
-            error = e.message ?: "No se pudo leer la lista"
-            channels = emptyList()
-        } finally {
-            loading = false
-        }
-    }
-
-    // La apariencia. Arranca con lo ultimo que se descargo bien, para que el
-    // televisor no muestre un diseno viejo mientras espera a la red, y despues
-    // consulta el servidor. En modo diseno sigue consultando cada 3 segundos.
+    // La apariencia. Arranca con lo ultimo que se descargo bien y despues
+    // consulta el servidor; en modo diseno sigue consultando cada 3 segundos.
     LaunchedEffect(booted, settings.skinUrl, settings.liveDesign, skinReload) {
         if (!booted) return@LaunchedEffect
         SkinSource.cached(ctx)?.let { Tint.skin = Skin.merge(Skin.DEFAULT, it) }
@@ -140,9 +117,7 @@ private fun App() {
                 if (next != Tint.skin) {
                     val fuenteCambio = next.fontUrl != Tint.skin.fontUrl
                     Tint.skin = next
-                    if (fuenteCambio) {
-                        Tint.fontFamily = SkinSource.font(ctx, next.fontUrl, settings.net)
-                    }
+                    if (fuenteCambio) Tint.fontFamily = SkinSource.font(ctx, next.fontUrl, settings.net)
                 }
             }
             if (!settings.liveDesign) break
@@ -150,33 +125,48 @@ private fun App() {
         }
     }
 
-    // Una sola consulta al abrir. No hay razon para volver a preguntar mientras
-    // la app esta en uso: quien esta mirando un canal no quiere un aviso encima.
     LaunchedEffect(booted) {
         if (booted) update = Updater.check(ctx, settings.net)
+    }
+
+    suspend fun cargarTodo() {
+        loading = true
+        error = null
+        try {
+            val xt = Xtream(settings.account, settings.net)
+            categories = runCatching { xt.categories() }.getOrDefault(emptyList())
+            allChannels = xt.channels(null)
+        } catch (e: Exception) {
+            error = e.message ?: "No se pudo leer la lista"
+            allChannels = emptyList()
+        } finally {
+            loading = false
+        }
     }
 
     LaunchedEffect(Unit) {
         settings = Prefs.load(ctx)
         booted = true
         if (!settings.account.isEmpty) {
-            screen = Screen.CHANNELS
-            loadChannels(null)
+            screen = Screen.HOME
+            cargarTodo()
         }
     }
 
     if (!booted) return
 
-    fun startPlayback(index: Int) {
-        val list = channels
-        if (list.isEmpty()) return
-        val i = ((index % list.size) + list.size) % list.size
-        playingIndex = i
-        val ch = list[i]
+    fun reproducir(c: Channel) {
         val e = engine ?: ResilientPlayer(ctx, scope, settings).also { engine = it }
         e.updateSettings(settings)
-        e.play(ch.name, ch.streamId)
-        scope.launch { Prefs.save(ctx, settings.copy(lastChannelId = ch.streamId)) }
+        e.play(c.name, c.streamId)
+        scope.launch { Prefs.save(ctx, settings.copy(lastChannelId = c.streamId)) }
+    }
+
+    fun alternarFavorito(c: Channel) {
+        val nuevos = settings.favorites.toMutableSet()
+        if (!nuevos.add(c.streamId)) nuevos.remove(c.streamId)
+        settings = settings.copy(favorites = nuevos)
+        scope.launch { Prefs.save(ctx, settings) }
     }
 
     when (screen) {
@@ -189,26 +179,24 @@ private fun App() {
                     settings = settings.copy(account = account)
                     Prefs.save(ctx, settings)
                     categories = emptyList()
-                    loadChannels(null)
-                    if (error == null) screen = Screen.CHANNELS
+                    cargarTodo()
+                    if (error == null) screen = Screen.HOME
                 }
             },
         )
 
-        Screen.CHANNELS -> ChannelsScreen(
+        Screen.HOME -> HomeScreen(
             categories = categories,
-            channels = channels,
+            allChannels = allChannels,
             selectedCategory = selectedCategory,
+            favorites = settings.favorites,
             loading = loading,
             error = error,
-            onCategory = { id ->
-                selectedCategory = id
-                scope.launch { loadChannels(id) }
-            },
-            onChannel = { ch ->
-                startPlayback(channels.indexOf(ch))
-                screen = Screen.PLAYER
-            },
+            engine = engine,
+            stats = stats,
+            onCategory = { selectedCategory = it },
+            onPlay = { reproducir(it) },
+            onToggleFavorite = { alternarFavorito(it) },
             onDiagnostics = {
                 findings.clear()
                 report = null
@@ -230,22 +218,6 @@ private fun App() {
             },
         )
 
-        Screen.PLAYER -> {
-            val e = engine
-            if (e == null) {
-                screen = Screen.CHANNELS
-            } else PlayerScreen(
-                engine = e,
-                stats = stats,
-                onPrevChannel = { startPlayback(playingIndex - 1) },
-                onNextChannel = { startPlayback(playingIndex + 1) },
-                onExit = {
-                    e.player.pause()
-                    screen = Screen.CHANNELS
-                },
-            )
-        }
-
         Screen.DIAGNOSTICS -> DiagnosticsScreen(
             running = diagRunning,
             findings = findings,
@@ -261,7 +233,7 @@ private fun App() {
                     }
                 }
             },
-            onExit = { screen = Screen.CHANNELS },
+            onExit = { screen = Screen.HOME },
         )
 
         Screen.SETTINGS -> SettingsScreen(
@@ -279,11 +251,11 @@ private fun App() {
                     Prefs.clear(ctx)
                     settings = AppSettings()
                     categories = emptyList()
-                    channels = emptyList()
+                    allChannels = emptyList()
                     screen = Screen.LOGIN
                 }
             },
-            onExit = { screen = Screen.CHANNELS },
+            onExit = { screen = Screen.HOME },
         )
     }
 }

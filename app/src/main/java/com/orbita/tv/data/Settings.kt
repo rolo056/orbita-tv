@@ -57,6 +57,8 @@ data class AppSettings(
      * durante horas de television.
      */
     val liveDesign: Boolean = false,
+    /** Ids de canal marcados como favoritos. */
+    val favorites: Set<Int> = emptySet(),
 ) {
     companion object {
         /**
