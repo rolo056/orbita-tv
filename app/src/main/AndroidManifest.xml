@@ -21,12 +21,15 @@
         android:theme="@style/Theme.Orbita"
         android:usesCleartextTraffic="true">
 
+        <!-- Sin orientacion fija: un televisor no rota igual, y en un telefono la
+             lista se puede usar en vertical. El reproductor pide horizontal por
+             su cuenta mientras esta en pantalla, y la devuelve al salir. -->
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:exported="true"
             android:launchMode="singleTop"
-            android:screenOrientation="landscape"
+            android:screenOrientation="unspecified"
             android:theme="@style/Theme.Orbita">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -2,6 +2,7 @@ package com.orbita.tv.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
@@ -30,14 +32,30 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.orbita.tv.data.ChannelLayout
+import com.orbita.tv.data.Skin
 import com.orbita.tv.net.Category
 import com.orbita.tv.net.Channel
 import com.orbita.tv.net.UpdateInfo
 
+/**
+ * Dos disposiciones de la misma pantalla.
+ *
+ * En un televisor las categorias van en una columna a la izquierda, que es lo
+ * natural con mando: bajar por la columna, cruzar a la derecha, elegir canal.
+ *
+ * En un telefono esa columna no cabe. El tema pide 360 dp de barra lateral,
+ * pensados para 1920 de ancho; en un telefono en vertical eso seria la pantalla
+ * entera. Asi que por debajo de 600 dp las categorias pasan a una fila que se
+ * desliza arriba, y los canales se quedan con todo el ancho.
+ *
+ * El corte se decide por el ancho disponible y no por si es televisor: una
+ * tableta en vertical tiene el mismo problema que un telefono.
+ */
 @Composable
 fun ChannelsScreen(
     categories: List<Category>,
@@ -59,111 +77,160 @@ fun ChannelsScreen(
         if (channels.isNotEmpty()) runCatching { firstChannel.requestFocus() }
     }
 
-    Row(Modifier.fillMaxSize().padding(skin.screenPad.dp)) {
-        // ---- Columna de categorias ----
-        Column(
-            modifier = Modifier.width(skin.sidebarWidth.dp).fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(skin.gap.dp),
-        ) {
-            if (skin.logoUrl != null) {
-                AsyncImage(
-                    model = skin.logoUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(40.dp),
-                )
-            } else {
-                BrandMark(size = 22.sp)
-            }
-            Spacer(Modifier.height(4.dp))
-            // El aviso de version nueva solo aparece cuando hay una, y arriba,
-            // donde el foco llega primero al abrir la pantalla.
-            if (update != null) {
-                FocusRow(onClick = onUpdate, modifier = Modifier.fillMaxWidth()) {
-                    Column {
-                        Text(
-                            if (updating) "Descargando…" else "Actualizar a la " + update.versionName,
-                            color = Tint.accent,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium,
-                        )
-                        Hint(if (updating) "No cierres la app" else "OK para instalar")
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val compact = maxWidth < 600.dp
+        val pad: Dp = if (compact) (skin.screenPad * 0.4f).dp else skin.screenPad.dp
+        // La barra lateral nunca puede comerse la pantalla, diga lo que diga el
+        // tema: se recorta al 40 % del ancho disponible.
+        val sidebar: Dp = minOf(skin.sidebarWidth.dp, maxWidth * 0.4f)
+
+        if (compact) {
+            Column(Modifier.fillMaxSize().padding(pad)) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Brand(skin, compact = true)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FocusRow(onClick = onDiagnostics) {
+                            Text("Red", color = Tint.text, fontSize = 14.sp)
+                        }
+                        FocusRow(onClick = onSettings) {
+                            Text("Ajustes", color = Tint.text, fontSize = 14.sp)
+                        }
                     }
                 }
-                Spacer(Modifier.height(4.dp))
-            }
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(skin.gap.dp * 0.75f),
-                modifier = Modifier.weight(1f),
-            ) {
-                item {
-                    CategoryRow("Todos los canales", selectedCategory == null) { onCategory(null) }
+                Spacer(Modifier.height(skin.gap.dp))
+                UpdateBanner(update, updating, onUpdate)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item {
+                        CategoryChip("Todos", selectedCategory == null) { onCategory(null) }
+                    }
+                    items(categories) { cat ->
+                        CategoryChip(cat.name, selectedCategory == cat.id) { onCategory(cat.id) }
+                    }
                 }
-                items(categories) { cat ->
-                    CategoryRow(cat.name, selectedCategory == cat.id) { onCategory(cat.id) }
+                Spacer(Modifier.height(skin.gap.dp))
+                ChannelArea(
+                    channels = channels, loading = loading, error = error,
+                    skin = skin, firstChannel = firstChannel, onChannel = onChannel,
+                )
+            }
+        } else {
+            Row(Modifier.fillMaxSize().padding(pad)) {
+                Column(
+                    modifier = Modifier.width(sidebar).fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(skin.gap.dp),
+                ) {
+                    Brand(skin, compact = false)
+                    Spacer(Modifier.height(4.dp))
+                    UpdateBanner(update, updating, onUpdate)
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(skin.gap.dp * 0.75f),
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        item {
+                            CategoryRow("Todos los canales", selectedCategory == null) {
+                                onCategory(null)
+                            }
+                        }
+                        items(categories) { cat ->
+                            CategoryRow(cat.name, selectedCategory == cat.id) { onCategory(cat.id) }
+                        }
+                    }
+                    Spacer(Modifier.height(skin.gap.dp))
+                    FocusRow(onClick = onDiagnostics, modifier = Modifier.fillMaxWidth()) {
+                        Text("Diagnóstico de red", color = Tint.text, fontSize = 15.sp)
+                    }
+                    FocusRow(onClick = onSettings, modifier = Modifier.fillMaxWidth()) {
+                        Text("Ajustes", color = Tint.text, fontSize = 15.sp)
+                    }
                 }
-            }
-            Spacer(Modifier.height(skin.gap.dp))
-            FocusRow(onClick = onDiagnostics, modifier = Modifier.fillMaxWidth()) {
-                Text("Diagnóstico de red", color = Tint.text, fontSize = 15.sp)
-            }
-            FocusRow(onClick = onSettings, modifier = Modifier.fillMaxWidth()) {
-                Text("Ajustes", color = Tint.text, fontSize = 15.sp)
+
+                Spacer(Modifier.width(pad))
+
+                Column(Modifier.weight(1f).fillMaxHeight()) {
+                    ChannelArea(
+                        channels = channels, loading = loading, error = error,
+                        skin = skin, firstChannel = firstChannel, onChannel = onChannel,
+                    )
+                }
             }
         }
+    }
+}
 
-        Spacer(Modifier.width(skin.screenPad.dp))
+@Composable
+private fun Brand(skin: Skin, compact: Boolean) {
+    if (skin.logoUrl != null) {
+        AsyncImage(
+            model = skin.logoUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.height(if (compact) 28.dp else 40.dp),
+        )
+    } else {
+        BrandMark(size = if (compact) 18.sp else 22.sp)
+    }
+}
 
-        // ---- Canales ----
-        Column(Modifier.weight(1f).fillMaxHeight()) {
-            when {
-                loading -> Hint("Cargando canales…")
-                error != null -> Text(error, color = Tint.fail, fontSize = 15.sp)
-                channels.isEmpty() -> Hint(
-                    "El servidor no devolvió canales. Abre Diagnóstico de red: " +
-                        "si autentica pero la lista viene vacía, el proveedor está " +
-                        "bloqueando la IP de salida de Starlink."
-                )
-                else -> {
-                    SectionTitle(channels.size.toString() + " CANALES")
-                    Spacer(Modifier.height(10.dp))
-                    val first = channels.first()
-                    if (skin.layout == ChannelLayout.MOSAICO) {
-                        LazyVerticalGrid(
-                            columns = GridCells.Adaptive(skin.tileWidth.dp),
-                            verticalArrangement = Arrangement.spacedBy(skin.gap.dp),
-                            horizontalArrangement = Arrangement.spacedBy(skin.gap.dp),
-                        ) {
-                            gridItems(channels, key = { it.streamId }) { ch ->
-                                ChannelTile(
-                                    ch = ch,
-                                    mosaico = true,
-                                    showLogos = skin.showLogos,
-                                    onClick = { onChannel(ch) },
-                                    modifier = if (ch == first) {
-                                        Modifier.fillMaxWidth().focusRequester(firstChannel)
-                                    } else {
-                                        Modifier.fillMaxWidth()
-                                    },
-                                )
-                            }
-                        }
-                    } else {
-                        LazyColumn(verticalArrangement = Arrangement.spacedBy(skin.gap.dp)) {
-                            items(channels, key = { it.streamId }) { ch ->
-                                ChannelTile(
-                                    ch = ch,
-                                    mosaico = false,
-                                    showLogos = skin.showLogos,
-                                    onClick = { onChannel(ch) },
-                                    modifier = if (ch == first) {
-                                        Modifier.fillMaxWidth().focusRequester(firstChannel)
-                                    } else {
-                                        Modifier.fillMaxWidth()
-                                    },
-                                )
-                            }
-                        }
+@Composable
+private fun UpdateBanner(update: UpdateInfo?, updating: Boolean, onUpdate: () -> Unit) {
+    if (update == null) return
+    FocusRow(onClick = onUpdate, modifier = Modifier.fillMaxWidth()) {
+        Column {
+            Text(
+                if (updating) "Descargando…" else "Actualizar a la " + update.versionName,
+                color = Tint.accent,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+            )
+            Hint(if (updating) "No cierres la app" else "Toca o pulsa OK para instalar")
+        }
+    }
+    Spacer(Modifier.height(4.dp))
+}
+
+@Composable
+private fun ChannelArea(
+    channels: List<Channel>,
+    loading: Boolean,
+    error: String?,
+    skin: Skin,
+    firstChannel: FocusRequester,
+    onChannel: (Channel) -> Unit,
+) {
+    when {
+        loading -> Hint("Cargando canales…")
+        error != null -> Text(error, color = Tint.fail, fontSize = 15.sp)
+        channels.isEmpty() -> Hint(
+            "El servidor no devolvió canales. Abre Diagnóstico de red: " +
+                "si autentica pero la lista viene vacía, el proveedor está " +
+                "bloqueando la IP de salida de Starlink."
+        )
+        else -> {
+            SectionTitle(channels.size.toString() + " CANALES")
+            Spacer(Modifier.height(10.dp))
+            val first = channels.first()
+            fun modFor(ch: Channel): Modifier =
+                if (ch == first) Modifier.fillMaxWidth().focusRequester(firstChannel)
+                else Modifier.fillMaxWidth()
+
+            if (skin.layout == ChannelLayout.MOSAICO) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(skin.tileWidth.dp),
+                    verticalArrangement = Arrangement.spacedBy(skin.gap.dp),
+                    horizontalArrangement = Arrangement.spacedBy(skin.gap.dp),
+                ) {
+                    gridItems(channels, key = { it.streamId }) { ch ->
+                        ChannelTile(ch, true, skin.showLogos, { onChannel(ch) }, modFor(ch))
+                    }
+                }
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(skin.gap.dp)) {
+                    items(channels, key = { it.streamId }) { ch ->
+                        ChannelTile(ch, false, skin.showLogos, { onChannel(ch) }, modFor(ch))
                     }
                 }
             }
@@ -253,6 +320,19 @@ private fun CategoryRow(name: String, selected: Boolean, onClick: () -> Unit) {
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun CategoryChip(name: String, selected: Boolean, onClick: () -> Unit) {
+    FocusRow(onClick = onClick) {
+        Text(
+            name,
+            color = if (selected) Tint.accent else Tint.text,
+            fontSize = 14.sp,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            maxLines = 1,
         )
     }
 }

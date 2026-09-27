@@ -1,8 +1,11 @@
 package com.orbita.tv.ui
 
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +35,8 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -52,6 +58,8 @@ fun PlayerScreen(
     var showInfo by remember { mutableStateOf(true) }
     var showHud by remember { mutableStateOf(false) }
     val focus = remember { FocusRequester() }
+    val esTv = isTvDevice()
+    val ctx = LocalContext.current
 
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     // La barra de informacion se va sola; el HUD se queda hasta que lo apagues.
@@ -59,6 +67,18 @@ fun PlayerScreen(
         if (showInfo) {
             kotlinx.coroutines.delay(5_000)
             showInfo = false
+        }
+    }
+
+    // El video se mira en horizontal. El resto de la app puede rotar libre en un
+    // telefono, asi que se pide horizontal solo mientras esta esta pantalla y se
+    // devuelve al salir. En un televisor no cambia nada: no rota.
+    DisposableEffect(Unit) {
+        val activity = ctx as? Activity
+        val anterior = activity?.requestedOrientation
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        onDispose {
+            if (activity != null && anterior != null) activity.requestedOrientation = anterior
         }
     }
 
@@ -87,11 +107,16 @@ fun PlayerScreen(
                     }
                     else -> false
                 }
+            }
+            // Tocar la imagen equivale al OK del mando. Los botones de abajo se
+            // dibujan encima, asi que reciben su propio toque antes que esto.
+            .pointerInput(Unit) {
+                detectTapGestures { showInfo = !showInfo }
             },
     ) {
         AndroidView(
-            factory = { ctx ->
-                PlayerView(ctx).apply {
+            factory = { c ->
+                PlayerView(c).apply {
                     useController = false
                     resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
                     setShutterBackgroundColor(android.graphics.Color.BLACK)
@@ -111,7 +136,10 @@ fun PlayerScreen(
                     Spacer(Modifier.height(12.dp))
                     Text(stats.fatalError, color = Tint.text, fontSize = 15.sp)
                     Spacer(Modifier.height(20.dp))
-                    Hint("Atrás para volver a la lista · Arriba y abajo para cambiar de canal")
+                    Hint(
+                        if (esTv) "Atrás para volver a la lista · Arriba y abajo para cambiar de canal"
+                        else "Atrás para volver a la lista"
+                    )
                 }
             }
         }
@@ -141,7 +169,30 @@ fun PlayerScreen(
                     }
                 }
                 Spacer(Modifier.height(4.dp))
-                Hint("Arriba y abajo cambian de canal · OK muestra u oculta esto · Derecha abre el detalle técnico")
+                Hint(
+                    if (esTv) {
+                        "Arriba y abajo cambian de canal · OK muestra u oculta esto · " +
+                            "Derecha abre el detalle técnico"
+                    } else {
+                        "Toca la imagen para mostrar u ocultar esto"
+                    }
+                )
+            }
+        }
+
+        // Sin mando no hay forma de cambiar de canal ni de ver el detalle, asi
+        // que en telefonos y tabletas los controles van en pantalla.
+        if (!esTv && stats.fatalError == null) {
+            Row(
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                TouchButton("Canal −") { onPrevChannel(); showInfo = true }
+                TouchButton("Canal +") { onNextChannel(); showInfo = true }
+                TouchButton(if (showHud) "Ocultar detalle" else "Detalle") { showHud = !showHud }
+                TouchButton("Salir") { onExit() }
             }
         }
 
@@ -175,6 +226,19 @@ fun PlayerScreen(
                 )
             }
         }
+    }
+}
+
+/** Boton para dedo: area amplia y fondo propio, porque va sobre el video. */
+@Composable
+private fun TouchButton(label: String, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .background(Color(0xB3000000), RoundedCornerShape(8.dp))
+            .pointerInput(label) { detectTapGestures { onClick() } }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
+        Text(label, color = Tint.text, fontSize = 15.sp, fontWeight = FontWeight.Medium)
     }
 }
 
