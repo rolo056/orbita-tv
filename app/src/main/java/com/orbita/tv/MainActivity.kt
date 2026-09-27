@@ -19,6 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import com.orbita.tv.data.Account
 import com.orbita.tv.data.AppSettings
@@ -104,6 +107,23 @@ private fun App() {
     LaunchedEffect(engine) { engine?.stats?.collect { stats = it } }
 
     DisposableEffect(Unit) { onDispose { engine?.release() } }
+
+    // Un reproductor reintentando en segundo plano, invisible, es como se
+    // acumulan miles de conexiones contra el panel sin que nadie se entere, y es
+    // asi como un servidor de IPTV termina bloqueando la IP. Fuera de pantalla
+    // no se intenta nada.
+    val duenoCicloVida = LocalLifecycleOwner.current
+    DisposableEffect(duenoCicloVida, engine) {
+        val observador = LifecycleEventObserver { _, evento ->
+            when (evento) {
+                Lifecycle.Event.ON_STOP -> engine?.onBackground()
+                Lifecycle.Event.ON_START -> engine?.onForeground()
+                else -> Unit
+            }
+        }
+        duenoCicloVida.lifecycle.addObserver(observador)
+        onDispose { duenoCicloVida.lifecycle.removeObserver(observador) }
+    }
 
     // La apariencia. Arranca con lo ultimo que se descargo bien y despues
     // consulta el servidor; en modo diseno sigue consultando cada 3 segundos.

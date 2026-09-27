@@ -266,7 +266,13 @@ class ResilientPlayer(
         // fue el momento, no el formato. Una que nunca arranco recibe dos
         // intentos y se cambia, pero DOS, no cero: un hipo de red al conectar no
         // puede descartar un formato que en realidad funciona.
-        val maxEnEsteFormato = if (startedOnVariant) 3 else 2
+        // En rondas posteriores se baja a un intento por formato: si no arranco
+        // en la primera vuelta, repetir lo mismo solo suma conexiones.
+        val maxEnEsteFormato = when {
+            ladderRounds > 0 -> 1
+            startedOnVariant -> 3
+            else -> 2
+        }
         if (attemptsOnVariant > maxEnEsteFormato) {
             advanceVariant(reason)
             return
@@ -330,7 +336,22 @@ class ResilientPlayer(
         ladderRounds++
         variantIndex = 0
         attemptsOnVariant = 0
-        val wait = minOf(5_000L * ladderRounds, 30_000L)
+
+        // Insistir para siempre cada 30 segundos NO es ser resistente: son unas
+        // 12 conexiones por minuto contra el panel, y un servidor de IPTV
+        // responde a eso bloqueando la IP en el firewall. El bloqueo se ve
+        // igual que un puerto cerrado, asi que el remedio parecia la
+        // enfermedad. Ahora las esperas crecen de verdad y hay un final.
+        if (ladderRounds > MAX_RONDAS) {
+            fatal(
+                "No se pudo conectar despues de varios intentos (" + reason + "). " +
+                    "Se deja de insistir a proposito: seguir reintentando puede hacer " +
+                    "que el panel bloquee tu conexion. Pulsa Reintentar cuando quieras, " +
+                    "o abre Diagnostico de red."
+            )
+            return
+        }
+        val wait = minOf(15_000L * ladderRounds, 300_000L)
         _stats.value = _stats.value.copy(
             status = "Sin señal · reintentando en " + (wait / 1000) + " s",
             retryRound = ladderRounds,
@@ -432,6 +453,29 @@ class ResilientPlayer(
 
     private companion object {
         const val LOAD_DEADLINE_MS = 9_000L
+        const val MAX_RONDAS = 5
+    }
+
+    /**
+     * La app dejo de estar en pantalla. Se corta todo: un reproductor
+     * reintentando en segundo plano, invisible, es como se acumulan miles de
+     * conexiones sin que nadie se entere.
+     */
+    fun onBackground() {
+        retryJob?.cancel()
+        deadlineJob?.cancel()
+        player.pause()
+        player.stop()
+        _stats.value = _stats.value.copy(status = "En pausa")
+    }
+
+    /** Volvio a pantalla: se retoma el canal que estaba puesto, si habia uno. */
+    fun onForeground() {
+        if (currentStreamId <= 0 || _stats.value.fatalError != null) return
+        ladderRounds = 0
+        attemptsOnVariant = 0
+        variantIndex = 0
+        load("Reanudando")
     }
 
     fun release() {
