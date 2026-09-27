@@ -33,20 +33,26 @@ const PUERTO = iP >= 0 ? Number(args[iP + 1]) : 8788;
 const HLS_JS = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js';
 const MPEGTS_JS = 'https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js';
 
-/** Los colores salen del mismo tema.json que usa el televisor. */
+/** Colores y tipografia salen del mismo tema.json que usa el televisor. */
 async function colores() {
   const porOmision = {
     fondo: '#1C1A19', tarjeta: '#262322', tarjetaFoco: '#3D3836', linea: '#3A3736',
     texto: '#F3F2F2', textoSuave: '#BAB6B6', acento: '#FF563C',
     aviso: '#E8B04A', falla: '#E86BB0',
   };
+  let fuente = null;
+  let fuenteNegrita = null;
   try {
     const t = JSON.parse(await fs.readFile(path.join(RAIZ, 'tema.json'), 'utf8'));
     for (const k of Object.keys(porOmision)) {
       if (typeof t[k] === 'string' && t[k].startsWith('#')) porOmision[k] = t[k];
     }
+    if (typeof t.fuenteUrl === 'string' && t.fuenteUrl.startsWith('http')) fuente = t.fuenteUrl;
+    if (typeof t.fuenteUrlNegrita === 'string' && t.fuenteUrlNegrita.startsWith('http')) {
+      fuenteNegrita = t.fuenteUrlNegrita;
+    }
   } catch { /* si no hay tema, se usan estos */ }
-  return porOmision;
+  return { ...porOmision, fuente, fuenteNegrita };
 }
 
 function ipLocal() {
@@ -89,6 +95,10 @@ async function pagina() {
 <script src="${HLS_JS}"></script>
 <script src="${MPEGTS_JS}"></script>
 <style>
+  ${c.fuente ? `@font-face { font-family:'TemaApp'; font-weight:400;
+    src:url('${c.fuente}') format('truetype'); font-display:swap; }` : ''}
+  ${c.fuenteNegrita ? `@font-face { font-family:'TemaApp'; font-weight:900;
+    src:url('${c.fuenteNegrita}') format('truetype'); font-display:swap; }` : ''}
   :root {
     color-scheme: dark;
     --bg:${c.fondo}; --card:${c.tarjeta}; --cardf:${c.tarjetaFoco}; --line:${c.linea};
@@ -97,7 +107,7 @@ async function pagina() {
   }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--text);
-         font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }
+         font:15px/1.5 TemaApp,system-ui,-apple-system,Segoe UI,sans-serif; }
   header { padding:14px 20px; border-bottom:1px solid var(--line);
            display:flex; align-items:center; gap:14px; }
   .marca { font-weight:900; letter-spacing:-0.5px; font-size:20px; }
@@ -128,6 +138,15 @@ async function pagina() {
   .estado b { color:var(--text); font-weight:600; }
   .aviso { color:var(--warn); }
   .malo { color:var(--fail); }
+  .num { color:var(--soft); font-size:12px; min-width:34px; font-variant-numeric:tabular-nums; }
+  .estrella { cursor:pointer; font-size:15px; color:var(--line); padding:0 4px; }
+  .estrella.on { color:var(--accent); }
+  .cuenta { color:var(--soft); font-size:12px; margin-left:6px; }
+  .reloj { margin-left:auto; font-size:20px; font-weight:900; font-variant-numeric:tabular-nums; }
+  .teclas { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px;
+            color:var(--soft); font-size:12px; }
+  .teclas b { background:var(--card); border:1px solid var(--line); color:var(--text);
+              padding:2px 7px; font-weight:700; margin-right:5px; }
   h2 { font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--soft);
        margin:0 0 8px; font-weight:600; }
 </style></head>
@@ -135,6 +154,7 @@ async function pagina() {
 <header>
   <div class="marca">ALEX<b>TV</b></div>
   <div class="sub">visor en el navegador · no es la app, es para mirar y para probar el panel</div>
+  <div class="reloj" id="reloj">--:--</div>
 </header>
 
 <main>
@@ -169,6 +189,12 @@ async function pagina() {
         <span>Reconexiones: <b id="eRec">0</b></span>
       </div>
       <div class="estado" id="eNota"></div>
+      <div style="margin-top:10px"><button id="expandir">Expandir a pantalla completa</button></div>
+      <div class="teclas">
+        <span><b>Clic</b>Ver en la ventana</span>
+        <span><b>Expandir</b>Pantalla completa, mismo stream</span>
+        <span><b>Estrella</b>Favorito</span>
+      </div>
     </div>
   </div>
 </main>
@@ -181,6 +207,22 @@ async function pagina() {
 
   let cuenta = guardado();
   let canales = [], categorias = [], catSel = null, actual = null;
+  const FAV = 'alextv-fav';
+  const leerFav = () => { try { return new Set(JSON.parse(localStorage.getItem(FAV) || '[]')); }
+                          catch { return new Set(); } };
+  let favoritos = leerFav();
+  const guardarFav = () => { try { localStorage.setItem(FAV, JSON.stringify([...favoritos])); } catch {} };
+
+  // Reloj, como en el televisor.
+  const pintarReloj = () => {
+    const d = new Date();
+    document.getElementById('reloj').textContent =
+      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  };
+  pintarReloj(); setInterval(pintarReloj, 15000);
+
+  // Tres digitos, como en la television de toda la vida.
+  const numero = (n) => String(n || 0).padStart(3, '0');
 
   // ---- acceso ----
   for (const [k, id] of [['host','host'],['puerto','puerto'],['usuario','usuario'],['clave','clave']]) {
@@ -239,14 +281,18 @@ async function pagina() {
 
   function pintarCats() {
     const c = $('cats'); c.innerHTML = '';
+    const cuentaDe = (id) => id === null ? canales.length
+      : id === '__fav__' ? favoritos.size
+      : canales.filter((x) => String(x.category_id) === String(id)).length;
     const mk = (nom, id) => {
       const d = document.createElement('div');
       d.className = 'cat' + (catSel === id ? ' on' : '');
-      d.textContent = nom;
+      d.innerHTML = nom + '<span class="cuenta">' + cuentaDe(id) + '</span>';
       d.onclick = () => { catSel = id; pintarCats(); pintarLista(); };
       c.appendChild(d);
     };
     mk('Todos', null);
+    if (favoritos.size) mk('Favoritos', '__fav__');
     for (const k of (categorias || [])) mk(k.category_name, k.category_id);
   }
 
@@ -254,16 +300,28 @@ async function pagina() {
     const q = $('buscar').value.trim().toLowerCase();
     const l = $('lista'); l.innerHTML = '';
     const vis = canales.filter((c) =>
-      (catSel === null || String(c.category_id) === String(catSel)) &&
+      (catSel === null ? true
+        : catSel === '__fav__' ? favoritos.has(c.stream_id)
+        : String(c.category_id) === String(catSel)) &&
       (!q || String(c.name).toLowerCase().includes(q)));
     for (const c of vis.slice(0, 400)) {
       const d = document.createElement('div');
       d.className = 'canal' + (actual && actual.stream_id === c.stream_id ? ' on' : '');
       const logo = c.stream_icon && String(c.stream_icon).startsWith('http')
         ? '<img src="' + c.stream_icon + '" onerror="this.remove()">' : '';
-      d.innerHTML = '<span class="n">' + (c.num || '') + '</span>' + logo +
-                    '<span>' + String(c.name).replace(/</g, '&lt;') + '</span>';
-      d.onclick = () => reproducir(c);
+      const fav = favoritos.has(c.stream_id);
+      d.innerHTML = '<span class="num">' + numero(c.num) + '</span>' + logo +
+                    '<span style="flex:1">' + String(c.name).replace(/</g, '&lt;') + '</span>' +
+                    '<span class="estrella' + (fav ? ' on' : '') + '">' +
+                    (fav ? '★' : '☆') + '</span>';
+      d.onclick = (ev) => {
+        if (ev.target.classList.contains('estrella')) {
+          if (!favoritos.delete(c.stream_id)) favoritos.add(c.stream_id);
+          guardarFav(); pintarCats(); pintarLista();
+          return;
+        }
+        reproducir(c);
+      };
       l.appendChild(d);
     }
     if (!vis.length) l.innerHTML = '<div class="canal">Sin resultados</div>';
@@ -365,6 +423,13 @@ async function pagina() {
     destruir();
     temporizador = setTimeout(cargar, espera);
   }
+
+  // Expandir es el mismo elemento de video a pantalla completa. Igual que en la
+  // app: no hay un segundo reproductor ni una segunda conexion.
+  $('expandir').addEventListener('click', () => {
+    if (video.requestFullscreen) video.requestFullscreen().catch(() => {});
+    else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+  });
 
   video.addEventListener('playing', () => { arranco = true; estado('reproduciendo'); nota(''); });
 
