@@ -35,6 +35,8 @@ data class PlaybackStats(
     val kbps: Long = 0,
     val reconnects: Int = 0,
     val healthySeconds: Int = 0,
+    /** Mayor que cero cuando se agoto la escalera y se sigue insistiendo despacio. */
+    val retryRound: Int = 0,
     val fatalError: String? = null,
 )
 
@@ -79,6 +81,7 @@ class ResilientPlayer(
     private var watchdogJob: Job? = null
     private var deadlineJob: Job? = null
     private var startedOnVariant = false
+    private var ladderRounds = 0
 
     // Estado del vigilante
     private var lastPosition = -1L
@@ -96,7 +99,10 @@ class ResilientPlayer(
                 if (state == Player.STATE_READY) {
                     startedOnVariant = true
                     deadlineJob?.cancel()
-                    _stats.value = _stats.value.copy(status = "Reproduciendo")
+                    _stats.value = _stats.value.copy(
+                        status = "Reproduciendo",
+                        retryRound = 0,
+                    )
                 }
             }
         })
@@ -172,6 +178,7 @@ class ResilientPlayer(
         variantIndex = 0
         attemptsOnVariant = 0
         hardened = false
+        ladderRounds = 0
         resetWatchdog()
         _stats.value = PlaybackStats(channelName = channelName, reconnects = 0)
         load("Conectando")
@@ -255,11 +262,12 @@ class ResilientPlayer(
     private fun retry(reason: String) {
         retryJob?.cancel()
         attemptsOnVariant++
-        if (!startedOnVariant && attemptsOnVariant >= 1) {
-            advanceVariant(reason)
-            return
-        }
-        if (attemptsOnVariant > 3) {
+        // Una forma del stream que ya dio imagen merece mas paciencia: si fallo,
+        // fue el momento, no el formato. Una que nunca arranco recibe dos
+        // intentos y se cambia, pero DOS, no cero: un hipo de red al conectar no
+        // puede descartar un formato que en realidad funciona.
+        val maxEnEsteFormato = if (startedOnVariant) 3 else 2
+        if (attemptsOnVariant > maxEnEsteFormato) {
             advanceVariant(reason)
             return
         }
@@ -308,11 +316,35 @@ class ResilientPlayer(
             }
             return
         }
-        fatal(
-            "No se pudo sostener el canal (" + reason + "). El diagnostico dice " +
-                "cual de las causas es: bloqueo del proveedor, IPv6 roto, cuenta " +
-                "ocupada o enlace inestable."
+        // Agotada la escalera NO se abandona. Un enlace satelital puede estar
+        // caido treinta segundos y volver, y rendirse para siempre a los diez
+        // segundos es justo lo contrario de para que existe esta app. Se sigue
+        // insistiendo despacio, con esperas cada vez mas largas para no
+        // martillar al panel.
+        restartLadder(reason)
+    }
+
+    private fun restartLadder(reason: String) {
+        retryJob?.cancel()
+        deadlineJob?.cancel()
+        ladderRounds++
+        variantIndex = 0
+        attemptsOnVariant = 0
+        val wait = minOf(5_000L * ladderRounds, 30_000L)
+        _stats.value = _stats.value.copy(
+            status = "Sin señal · reintentando en " + (wait / 1000) + " s",
+            retryRound = ladderRounds,
         )
+        retryJob = scope.launch {
+            delay(wait)
+            load("Reintentando · ronda " + ladderRounds)
+        }
+    }
+
+    /** Reintento pedido a mano, tras un rechazo del panel. Empieza de cero. */
+    fun retryNow() {
+        if (currentStreamId <= 0) return
+        play(_stats.value.channelName, currentStreamId)
     }
 
     private fun bump(status: String) {
@@ -381,9 +413,12 @@ class ResilientPlayer(
         }
         lastPosition = pos
 
-        // Un minuto sano: esta forma del stream sirve, se olvidan los intentos.
-        if (healthyMs >= 60_000 && attemptsOnVariant != 0) {
+        // Un minuto sano: esta forma del stream sirve. Se olvidan los intentos y
+        // tambien las rondas, para que la proxima caida arranque con esperas
+        // cortas en vez de heredar los treinta segundos de la ultima racha mala.
+        if (healthyMs >= 60_000) {
             attemptsOnVariant = 0
+            ladderRounds = 0
         }
 
         if (stalledMs >= net.stallSeconds * 1000) {

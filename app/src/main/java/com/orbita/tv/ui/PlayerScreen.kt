@@ -136,10 +136,41 @@ fun PlayerScreen(
                     Spacer(Modifier.height(12.dp))
                     Text(stats.fatalError, color = Tint.text, fontSize = 15.sp)
                     Spacer(Modifier.height(20.dp))
+                    FocusRow(onClick = { engine.retryNow() }, modifier = Modifier.width(220.dp)) {
+                        Text("Reintentar", color = Tint.text, fontSize = 16.sp)
+                    }
+                    Spacer(Modifier.height(12.dp))
                     Hint(
                         if (esTv) "Atrás para volver a la lista · Arriba y abajo para cambiar de canal"
                         else "Atrás para volver a la lista"
                     )
+                }
+            }
+        }
+
+        // La app sigue insistiendo sola. Sin este aviso la pantalla queda negra y
+        // parece colgada, que es la peor forma de esperar.
+        if (stats.retryRound > 0 && stats.fatalError == null) {
+            Box(
+                Modifier.fillMaxSize().padding(32.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    Modifier
+                        .background(Color(0xCC000000), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 28.dp, vertical = 22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        "Sin señal",
+                        color = Tint.warn,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(stats.status, color = Tint.text, fontSize = 15.sp)
+                    Spacer(Modifier.height(6.dp))
+                    Hint("Sigue reintentando solo · Atrás para volver a la lista")
                 }
             }
         }
