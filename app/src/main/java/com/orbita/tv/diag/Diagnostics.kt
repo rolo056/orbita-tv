@@ -40,6 +40,7 @@ private enum class Cause {
     PUERTO_CERRADO, // el puerto raro del panel no responde
     ENLACE_INESTABLE, // conecta pero el caudal se corta a cada rato
     PUERTO_ALTERNATIVO, // el puerto configurado no pasa, pero otro del mismo panel si
+    SOLO_ESTE_SERVIDOR, // hay internet desde la app, pero no camino hasta este servidor
 }
 
 object Diagnostics {
@@ -139,6 +140,44 @@ object Diagnostics {
                     emit(
                         "Otros puertos", Level.FAIL,
                         "Se probaron los puertos habituales y ninguno responde desde esta red."
+                    )
+                }
+
+                // Prueba de control. Sin esto, "el puerto no responde" deja sin
+                // resolver la pregunta que importa: si esta app no puede abrir
+                // NINGUNA conexion desde este aparato, o si puede abrirlas a todos
+                // lados menos a este servidor. Son causas opuestas y hasta ahora
+                // habia que adivinar cual era.
+                val controles = listOf(
+                    "1.1.1.1" to "Cloudflare",
+                    "8.8.8.8" to "Google",
+                )
+                var controlOk = 0
+                for ((ip, nombre) in controles) {
+                    val r = tcp(InetAddress.getByName(ip), 80)
+                    if (r.first) controlOk++
+                    emit(
+                        "Control · " + nombre,
+                        if (r.first) Level.OK else Level.WARN,
+                        if (r.first) ("responde en " + r.second + " ms")
+                        else ("no responde: " + r.third),
+                    )
+                }
+                if (controlOk > 0) {
+                    causes.add(Cause.SOLO_ESTE_SERVIDOR)
+                    emit(
+                        "Conclusion del control", Level.FAIL,
+                        "Esta app SI abre conexiones a internet desde este aparato, pero " +
+                            "no a " + account.host + ". O sea que no es la app ni el permiso " +
+                            "de red: este aparato no tiene camino hasta ese servidor, aunque " +
+                            "otros aparatos de la casa si lo tengan."
+                    )
+                } else {
+                    emit(
+                        "Conclusion del control", Level.FAIL,
+                        "Esta app no consigue abrir NINGUNA conexion, ni siquiera a " +
+                            "servidores publicos. El problema es la red del aparato o los " +
+                            "permisos, no el proveedor."
                     )
                 }
             }
@@ -356,6 +395,8 @@ object Diagnostics {
             }
         }
         val headline = when {
+            Cause.SOLO_ESTE_SERVIDOR in causes ->
+                "Este aparato no tiene camino hasta ese servidor"
             Cause.CUENTA_OCUPADA in causes ->
                 "La cuenta esta ocupada, no es la red"
             Cause.BLOQUEO_IP in causes ->
@@ -385,6 +426,17 @@ object Diagnostics {
         }
         if (Cause.IPV6_ROTO in causes) {
             advice.add("Deja \"Forzar IPv4\" activado: evita el intento a IPv6 que se cuelga.")
+        }
+        if (Cause.SOLO_ESTE_SERVIDOR in causes) {
+            advice.add(
+                "Compara la red: mira la IP de este aparato y la de un telefono donde " +
+                    "si funcione. Si no empiezan igual, no estan en la misma red aunque " +
+                    "lo parezca; pasa a menudo con repetidores y con redes de invitados."
+            )
+            advice.add(
+                "Revisa en los ajustes del aparato si hay DNS privado, proxy o VPN " +
+                    "activados, y en el router si hay filtrado por dispositivo."
+            )
         }
         if (Cause.PUERTO_ALTERNATIVO in causes) {
             advice.add(
