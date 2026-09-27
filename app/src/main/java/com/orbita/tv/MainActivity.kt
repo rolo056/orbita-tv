@@ -141,7 +141,7 @@ private fun App() {
             categories = runCatching { xt.categories() }.getOrDefault(emptyList())
             allChannels = xt.channels(null)
         } catch (e: Exception) {
-            error = e.message ?: "No se pudo leer la lista"
+            error = Xtream.mensajeAmigable(e)
             allChannels = emptyList()
         } finally {
             loading = false

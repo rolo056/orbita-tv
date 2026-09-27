@@ -31,12 +31,30 @@
             android:launchMode="singleTop"
             android:screenOrientation="unspecified"
             android:theme="@style/Theme.Orbita">
+            <!-- Solo LAUNCHER. Declarar aqui tambien LEANBACK_LAUNCHER hacia que
+                 algunos lanzadores de telefono crearan un acceso por categoria,
+                 y aparecia la app duplicada. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- La entrada del televisor, apuntando a la misma actividad. Cada
+             lanzador encuentra exactamente una: el del telefono busca LAUNCHER,
+             el del televisor busca LEANBACK_LAUNCHER. -->
+        <activity-alias
+            android:name=".TvLauncherAlias"
+            android:banner="@drawable/tv_banner"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <!-- Entrega el APK descargado al instalador de Android. Desde Android 7
              no se puede pasar un file:// a otra app. -->

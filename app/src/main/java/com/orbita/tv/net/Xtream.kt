@@ -119,6 +119,29 @@ class Xtream(private val account: Account, net: NetSettings) {
     }
 
     companion object {
+        /**
+         * Traduce el fallo a algo que se pueda actuar. Un
+         * "failed to connect to /80.80.90.95 (port 25461) after 15000ms" en
+         * pantalla no le dice nada a nadie, y ademas lleva a la conclusion
+         * equivocada: parece que el proveedor esta caido cuando lo normal es que
+         * la red desde la que se mira no deje salir por ese puerto.
+         */
+        fun mensajeAmigable(e: Throwable): String = when {
+            e is XtreamException && e.httpCode == 401 ->
+                "El panel rechazo la cuenta. Revisa usuario y contrasena, o si venció."
+            e is XtreamException && e.httpCode == 403 ->
+                "El panel rechazo la conexion. Suele ser la cuenta en uso en otro " +
+                    "aparato, o el proveedor bloqueando esta IP."
+            e is java.net.UnknownHostException ->
+                "No se pudo resolver el nombre del servidor. Prueba activando " +
+                    "\"Resolver nombres por Cloudflare\" en Ajustes."
+            e is java.net.SocketTimeoutException || e is java.net.ConnectException ->
+                "No se pudo abrir la conexion con el servidor. El panel puede estar " +
+                    "perfecto y aun asi fallar si ESTA red no deja salir por su puerto. " +
+                    "Abre Diagnostico de red: te dice cual de las causas es."
+            else -> e.message ?: "No se pudo leer la lista"
+        }
+
         fun enc(s: String): String = java.net.URLEncoder.encode(s, "UTF-8")
 
         /**
