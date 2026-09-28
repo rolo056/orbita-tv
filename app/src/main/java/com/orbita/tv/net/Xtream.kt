@@ -108,6 +108,36 @@ class Xtream(private val account: Account, net: NetSettings) {
         return out
     }
 
+    /**
+     * La lista completa de canales, con plan B.
+     *
+     * Medido contra un panel real: get_live_streams devuelve 35 KB de una vez y
+     * a veces tarda 20 segundos o se cuelga, mientras que la MISMA consulta
+     * partida por categoria son 3 KB y responde en 0,2 s siempre. Pedirlo todo
+     * junto es depender de la unica peticion que falla, y cuando falla la app
+     * queda sin canales aunque el panel este perfecto.
+     *
+     * Primero se intenta la via rapida con un plazo corto; si no llega a tiempo
+     * o vuelve vacia, se arma la lista categoria por categoria. Asi una
+     * categoria lenta no se lleva por delante a las demas.
+     */
+    suspend fun allChannels(cats: List<Category>): List<Channel> {
+        val rapido = kotlinx.coroutines.withTimeoutOrNull(8_000) {
+            runCatching { channels(null) }.getOrDefault(emptyList())
+        }
+        if (!rapido.isNullOrEmpty()) return rapido
+
+        val vistos = LinkedHashMap<Int, Channel>()
+        for (cat in cats) {
+            val parte = kotlinx.coroutines.withTimeoutOrNull(8_000) {
+                runCatching { channels(cat.id) }.getOrDefault(emptyList())
+            } ?: emptyList()
+            // putIfAbsent pide API 24 y la app soporta desde la 21.
+            for (c in parte) if (!vistos.containsKey(c.streamId)) vistos[c.streamId] = c
+        }
+        return vistos.values.toList()
+    }
+
     private fun array(body: String): JSONArray {
         val direct = runCatching { JSONArray(body) }.getOrNull()
         if (direct != null) return direct

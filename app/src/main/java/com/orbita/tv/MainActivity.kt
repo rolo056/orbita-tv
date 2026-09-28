@@ -161,7 +161,11 @@ private fun App() {
         try {
             val xt = Xtream(settings.account, settings.net)
             categories = runCatching { xt.categories() }.getOrDefault(emptyList())
-            allChannels = xt.channels(null)
+            allChannels = xt.allChannels(categories)
+            if (allChannels.isEmpty()) {
+                error = "El panel autentica pero no devolvio ningun canal. " +
+                    "Prueba de nuevo en unos segundos, o abre Diagnostico de red."
+            }
         } catch (e: Exception) {
             // Antes de rendirse: puede que el panel conteste por otro puerto.
             // Ver Xtream.puertoQueResponde, que existe por un caso real.
