@@ -26,6 +26,17 @@ import com.orbita.tv.data.BufferPreset
 import com.orbita.tv.data.NetSettings
 import com.orbita.tv.data.VariantOrder
 
+@Composable
+private fun versionInstalada(): String {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    return androidx.compose.runtime.remember(ctx) {
+        runCatching {
+            val info = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
+            info.versionName + " (" + @Suppress("DEPRECATION") info.versionCode + ")"
+        }.getOrDefault("desconocida")
+    }
+}
+
 /**
  * Cada palanca de aca corresponde a una falla concreta del enlace. La etiqueta
  * dice que arregla, no como se llama por dentro.
@@ -46,6 +57,10 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text("Ajustes", color = Tint.text, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
+        // La version, a la vista. Sin esto no hay forma de distinguir "el
+        // arreglo no funciona" de "el arreglo no esta instalado", y esa duda
+        // cuesta horas de depuracion a ciegas.
+        Hint("Versión " + versionInstalada())
         Spacer(Modifier.height(10.dp))
 
         SectionTitle("ESTABILIDAD")
