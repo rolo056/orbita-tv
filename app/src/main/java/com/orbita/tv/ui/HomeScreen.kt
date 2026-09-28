@@ -165,10 +165,29 @@ fun HomeScreen(
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val compacto = maxWidth < 600.dp
         val pad: Dp = if (compacto) (skin.screenPad * 0.4f).dp else skin.screenPad.dp
-        val lateral: Dp = minOf(skin.sidebarWidth.dp, maxWidth * 0.4f)
-        // La columna derecha aloja la vista previa. En pantallas chicas no hay
-        // sitio, asi que no existe y OK va directo a pantalla completa.
-        val anchoPrevia: Dp = if (compacto) 0.dp else minOf(520.dp, maxWidth * 0.33f)
+        // Reparto del ancho, con una regla por encima del tema: la lista de
+        // canales es lo que esta pantalla existe para mostrar, y nunca puede
+        // quedarse sin sitio.
+        //
+        // Viene de un caso real: el tema traia la barra lateral en 360, pensada
+        // como pixeles de una maqueta de 1920 pero aplicada como dp. Entre la
+        // barra, los margenes y la vista previa, a los canales les quedaban 123
+        // dp y el nombre se dibujaba en tres. Los canales estaban ahi y no se
+        // veian. Ahora, si no caben, se recorta primero la vista previa —que es
+        // un lujo— y despues la barra lateral.
+        val disponible: Dp = maxWidth - pad * 4
+        val listaMinima: Dp = 300.dp
+        var lateral: Dp = minOf(skin.sidebarWidth.dp, disponible * 0.30f)
+        var anchoPrevia: Dp = if (compacto) 0.dp else minOf(520.dp, disponible * 0.34f)
+        var falta: Dp = listaMinima - (disponible - lateral - anchoPrevia)
+        if (falta > 0.dp && anchoPrevia > 0.dp) {
+            val recorte = minOf(falta, (anchoPrevia - 180.dp).coerceAtLeast(0.dp))
+            anchoPrevia -= recorte
+            falta -= recorte
+        }
+        if (falta > 0.dp) {
+            lateral = (lateral - falta).coerceAtLeast(140.dp)
+        }
         val altoPrevia: Dp = anchoPrevia * 9f / 16f
 
         if (!pantallaCompleta) {
