@@ -160,11 +160,25 @@ private fun App() {
         error = null
         try {
             val xt = Xtream(settings.account, settings.net)
+            // Primero la cuenta, SIN tragarse el error. Es una respuesta chica y
+            // es la unica que dice la verdad sobre si el servidor se alcanza.
+            // Antes este paso no existia, las consultas siguientes se tragaban
+            // sus errores, y un servidor totalmente inalcanzable terminaba en
+            // "el panel autentica pero no devolvio canales": falso en las dos
+            // mitades, y encima escondia el motivo real.
+            val estado = xt.status()
+            if (!estado.authOk) {
+                error = "El panel rechazo la cuenta. Revisa usuario y contrasena, " +
+                    "o si la cuenta vencio."
+                allChannels = emptyList()
+                return
+            }
             categories = runCatching { xt.categories() }.getOrDefault(emptyList())
             allChannels = xt.allChannels(categories)
             if (allChannels.isEmpty()) {
-                error = "El panel autentica pero no devolvio ningun canal. " +
-                    "Prueba de nuevo en unos segundos, o abre Diagnostico de red."
+                // Aqui SI es cierto: la cuenta respondio y la lista no llego.
+                error = "El panel acepto la cuenta pero la lista de canales no llego. " +
+                    "Suele ser la red: prueba de nuevo o abre Diagnostico de red."
             }
         } catch (e: Exception) {
             // Antes de rendirse: puede que el panel conteste por otro puerto.
