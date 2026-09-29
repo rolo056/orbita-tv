@@ -20,12 +20,33 @@ android {
         versionName = "1.0.$build"
     }
 
+    // La clave de firma TIENE que ser la misma en todas las compilaciones.
+    // Con la clave de depuracion no lo era: en CI se genera una nueva en cada
+    // ejecucion, asi que Android rechazaba instalar encima con "no se instalo la
+    // aplicacion" y el actualizador de la app nunca podia aplicar nada.
+    val claveEstable = rootProject.file("clave-firma.jks")
+    signingConfigs {
+        if (claveEstable.exists()) {
+            create("estable") {
+                storeFile = claveEstable
+                storePassword = "alextv"
+                keyAlias = "alextv"
+                keyPassword = "alextv"
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Firmado con la clave de depuracion a proposito: el APK se instala
-            // de forma manual en el TV, no pasa por Play Store.
-            signingConfig = signingConfigs.getByName("debug")
+            // No pasa por Play Store: se instala a mano. La contrasena esta a la
+            // vista a proposito, no protege nada; lo que importa es que no
+            // cambie entre compilaciones.
+            signingConfig = if (claveEstable.exists()) {
+                signingConfigs.getByName("estable")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 

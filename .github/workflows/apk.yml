@@ -43,6 +43,24 @@ jobs:
             "$MGR" --install "platforms;android-35" "build-tools;35.0.0" || true
           fi
 
+      # La clave se crea UNA vez y queda en el repositorio. No protege nada
+      # —la contrasena esta a la vista— pero garantiza que todas las
+      # compilaciones se firmen igual, que es lo unico que Android exige para
+      # dejar instalar una version encima de la anterior.
+      - name: Asegurar la clave de firma estable
+        run: |
+          if [ ! -f clave-firma.jks ]; then
+            keytool -genkeypair -v -keystore clave-firma.jks               -storepass alextv -keypass alextv -alias alextv               -keyalg RSA -keysize 2048 -validity 10000               -dname "CN=ALEX TV, OU=Personal, O=Personal, L=NA, ST=NA, C=HN"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add clave-firma.jks
+            git commit -m "Clave de firma estable, para que las actualizaciones instalen encima"
+            git push
+            echo "clave creada y guardada"
+          else
+            echo "la clave ya existe"
+          fi
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
