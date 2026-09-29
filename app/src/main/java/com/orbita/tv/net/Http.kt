@@ -14,13 +14,25 @@ import java.util.concurrent.TimeUnit
  * conexion y un paquete perdido congela el stream entero.
  */
 object Http {
-    fun client(net: NetSettings, readTimeoutSeconds: Long = 30): OkHttpClient {
+    /**
+     * callTimeoutSeconds es el unico limite que corta de verdad una peticion
+     * colgada. Los otros solo vigilan huecos entre bytes, asi que una respuesta
+     * que llega a goteo puede tardar minutos sin dispararlos. Para el video vale
+     * 0, porque un canal es una lectura sin fin; para las consultas del panel
+     * TIENE que ser finito, o un withTimeoutOrNull de fuera no sirve de nada:
+     * la llamada es bloqueante y no se deja interrumpir.
+     */
+    fun client(
+        net: NetSettings,
+        readTimeoutSeconds: Long = 30,
+        callTimeoutSeconds: Long = 0,
+    ): OkHttpClient {
         val b = OkHttpClient.Builder()
             .dns(SmartDns(net.forceIpv4, net.useDoh))
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(readTimeoutSeconds, TimeUnit.SECONDS)
             .writeTimeout(15, TimeUnit.SECONDS)
-            .callTimeout(0, TimeUnit.SECONDS) // el video es una lectura sin fin
+            .callTimeout(callTimeoutSeconds, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .followRedirects(true)
         if (net.forceHttp11) b.protocols(listOf(Protocol.HTTP_1_1))

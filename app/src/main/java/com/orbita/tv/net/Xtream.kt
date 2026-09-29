@@ -35,7 +35,9 @@ class XtreamException(message: String, val httpCode: Int = 0) : Exception(messag
  */
 class Xtream(private val account: Account, net: NetSettings) {
 
-    private val client = Http.client(net, readTimeoutSeconds = 25)
+    // 12 segundos de tope real por consulta. Sin esto una peticion colgada se
+    // come el arranque entero y el plan B nunca llega a ejecutarse.
+    private val client = Http.client(net, readTimeoutSeconds = 20, callTimeoutSeconds = 12)
     private val ua = net.userAgent
 
     private fun api(vararg extra: Pair<String, String>): String {
@@ -122,16 +124,15 @@ class Xtream(private val account: Account, net: NetSettings) {
      * categoria lenta no se lleva por delante a las demas.
      */
     suspend fun allChannels(cats: List<Category>): List<Channel> {
-        val rapido = kotlinx.coroutines.withTimeoutOrNull(8_000) {
-            runCatching { channels(null) }.getOrDefault(emptyList())
-        }
-        if (!rapido.isNullOrEmpty()) return rapido
+        // El tope lo pone ahora el propio cliente HTTP, que si corta. Envolverlo
+        // en withTimeoutOrNull era inutil: la llamada es bloqueante y seguia
+        // corriendo despues de que el plazo venciera.
+        val rapido = runCatching { channels(null) }.getOrDefault(emptyList())
+        if (rapido.isNotEmpty()) return rapido
 
         val vistos = LinkedHashMap<Int, Channel>()
         for (cat in cats) {
-            val parte = kotlinx.coroutines.withTimeoutOrNull(8_000) {
-                runCatching { channels(cat.id) }.getOrDefault(emptyList())
-            } ?: emptyList()
+            val parte = runCatching { channels(cat.id) }.getOrDefault(emptyList())
             // putIfAbsent pide API 24 y la app soporta desde la 21.
             for (c in parte) if (!vistos.containsKey(c.streamId)) vistos[c.streamId] = c
         }
