@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -334,7 +335,7 @@ private fun Contenido(
             ) {
                 BrandMark(size = 18.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(hora, color = Tint.textSoft, fontSize = 14.sp)
+                    Text(hora, color = Tint.textSoft, fontSize = 14.sp, maxLines = 1, softWrap = false)
                     FocusRow(onClick = onDiagnostics) { Text("Red", color = Tint.text, fontSize = 14.sp) }
                     FocusRow(onClick = onSettings) { Text("Ajustes", color = Tint.text, fontSize = 14.sp) }
                 }
@@ -411,7 +412,10 @@ private fun Contenido(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom,
             ) {
-                Column {
+                // El titulo cede espacio (se corta con puntos suspensivos) y el
+                // reloj nunca se parte. Antes el titulo se comia todo el ancho y
+                // el reloj quedaba en una columna de una letra: 2 / 1: / 1 / 8.
+                Column(Modifier.weight(1f)) {
                     SectionTitle(visibles.size.toString() + " CANALES")
                     Text(
                         nombreCat,
@@ -422,7 +426,15 @@ private fun Contenido(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                Text(hora, color = Tint.text, fontSize = 22.sp, fontWeight = FontWeight.Medium)
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    hora,
+                    color = Tint.text,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    softWrap = false,
+                )
             }
             Spacer(Modifier.height(14.dp))
             Aviso(notice)
@@ -561,7 +573,9 @@ private fun FilaCanal(
                 Text("★", color = Tint.accent, fontSize = 16.sp)
                 Spacer(Modifier.width(8.dp))
             }
-            if (enVentana) Text("EN VENTANA", color = Tint.accent, fontSize = 11.sp)
+            if (enVentana) {
+                Text("EN VENTANA", color = Tint.accent, fontSize = 11.sp, maxLines = 1, softWrap = false)
+            }
         }
     }
 }
@@ -633,10 +647,19 @@ private fun BannerActualizacion(update: UpdateInfo?, updating: Boolean, onUpdate
 
 @Composable
 private fun PieDeTeclas() {
-    Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+    // Una sola linea y alto fijo, recortado. Este pie es el que escondia los
+    // canales: cuando no cabia, cada texto se partia letra por letra hacia
+    // abajo, el pie crecia hasta comerse todo el alto, y la lista —que solo
+    // recibe lo que sobra— se quedaba en cero. Los canales cargaban y se
+    // dibujaban en un hueco invisible, sin una sola fila donde pararse.
+    Row(
+        Modifier.fillMaxWidth().height(26.dp).clipToBounds(),
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Tecla("▲▼", "Moverse")
         Tecla("OK", "Ver en ventana")
-        Tecla("OK", "otra vez: pantalla completa")
+        Tecla("OK ×2", "Pantalla completa")
         Tecla("Mantener OK", "Favorito")
     }
 }
@@ -649,12 +672,14 @@ private fun Tecla(tecla: String, que: String) {
             color = Tint.text,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            softWrap = false,
             modifier = Modifier
                 .background(Tint.card)
                 .padding(horizontal = 7.dp, vertical = 3.dp),
         )
         Spacer(Modifier.width(7.dp))
-        Text(que, color = Tint.textSoft, fontSize = 12.sp)
+        Text(que, color = Tint.textSoft, fontSize = 12.sp, maxLines = 1, softWrap = false)
     }
 }
 
