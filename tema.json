@@ -26,8 +26,8 @@
   "anchoTile": 150,
   "mostrarLogos": true,
   "anchoBarraLateral": 160,
-  "_marca": "logoUrl reemplaza el texto ALEX TV de la barra lateral. fondoImagenUrl va detrás de todo; con opacidad alta el texto se vuelve ilegible, 0.15 a 0.3 funciona.",
+  "_marca": "SONDA TEMPORAL: fondoImagenUrl apunta a una imagen transparente de 1x1 servida desde el VPS, con opacidad 0, para ver en el registro si el televisor alcanza el VPS. No se ve nada en pantalla. Quitar despues de leer el resultado (dejar fondoImagenUrl en null). logoUrl reemplaza el texto ALEX TV de la barra lateral.",
   "logoUrl": null,
-  "fondoImagenUrl": null,
-  "fondoImagenOpacidad": 0.25
+  "fondoImagenUrl": "http://107.174.96.104:18765/p.png",
+  "fondoImagenOpacidad": 0
 }
