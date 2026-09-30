@@ -6,3 +6,4 @@ local.properties
 .DS_Store
 credenciales.local.json
 *.zip
+*.local.md
