@@ -32,44 +32,66 @@ Eso manda tres cosas antes que cualquier gusto estético:
 ## 2. Las pantallas, y dónde cae cada valor
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  PANTALLA DE CANALES            margenPantalla en todo el   │
-│                                 borde                       │
-│ ┌──────────────┐  ┌──────────────────────────────────────┐  │
-│ │ logoUrl      │  │ 89 CANALES          <- textoSuave    │  │
-│ │  o "ALEX TV" │  │                                      │  │
-│ │              │  │ ┌──────────────────────────────────┐ │  │
-│ │ Todos  <-ace.│  │ │ [logo] Nombre del canal          │ │  │
-│ │ Deportes     │  │ └──────────────────────────────────┘ │  │
-│ │ Noticias     │  │ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ │  │
-│ │ Cine         │  │ ┃ [logo] ENFOCADO                  ┃ │  │
-│ │              │  │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ │  │
-│ │ Diagnóstico  │  │   ^ tarjetaFoco + acento + grosorFoco│  │
-│ │ Ajustes      │  │     y escalaFoco lo agranda          │  │
-│ └──────────────┘  └──────────────────────────────────────┘  │
-│  ^ anchoBarraLateral    ^ disposicion: lista o mosaico      │
-└─────────────────────────────────────────────────────────────┘
-         fondo en todo · fondoImagenUrl detrás de todo
+┌──────────────────────────────────────────────────────────────────────────┐
+│  CANALES EN VIVO                           margenPantalla en todo el borde │
+│ ┌────────────┐  89 CANALES   <- textoSuave                                 │
+│ │ logoUrl    │  Todos los canales        EN VIVO  PELÍCULAS  SERIES  20:17 │
+│ │ o "ALEX TV"│  ───────────────────────────────────── <- linea ─────────── │
+│ │            │ ┌─────────────────────────────┐ ┌─────────────────────────┐ │
+│ │ CATEGORÍAS │ │ 001  Canal Uno HD           │ │                         │ │
+│ │ Todos   89 │ └─────────────────────────────┘ │   el canal, en chico    │ │
+│ │ Deportes 8 │ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ │   (el mismo video que   │ │
+│ │ Noticias 8 │ ┃ 002  ENFOCADO           ★   ┃ │   la pantalla completa) │ │
+│ │ Cine     8 │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ └─────────────────────────┘ │
+│ │            │   ^ tarjetaFoco + acento +       ┌─────────────────────────┐ │
+│ │ Diagnóstico│     grosorFoco; escalaFoco       │ 002  Nombre del canal   │ │
+│ │ Ajustes    │     lo agranda                   │ Reproduciendo · HLS     │ │
+│ └────────────┘                                  └─────────────────────────┘ │
+│  ^ anchoBarraLateral                                                       │
+│                 ▲▼ Moverse   OK Ver en ventana   OK ×2 Pantalla completa   │
+└──────────────────────────────────────────────────────────────────────────┘
+        fondo en todo · fondoImagenUrl detrás de todo
 
-┌─────────────────────────────────────────────────────────────┐
-│  REPRODUCTOR: video a pantalla completa, sin marco           │
-│                                                              │
-│                                        ┌──────────────────┐  │
-│                                        │ DETALLE TÉCNICO  │  │
-│                                        │ Búfer      42 s  │  │
-│                                        └──────────────────┘  │
-│ ┌──────────────────────────────────────────────────────────┐ │
-│ │ Nombre del canal                        <- texto, grande │ │
-│ │ Reproduciendo · HLS · reconexiones: 2   <- textoSuave    │ │
-│ └──────────────────────────────────────────────────────────┘ │
-│   ^ estos dos paneles van SOBRE el video, con su propio      │
-│     fondo negro translúcido que no es configurable           │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│  PELÍCULAS y SERIES: las mismas categorías a la izquierda, y portadas      │
+│ ┌────────────┐  14 PELÍCULAS                                               │
+│ │ "ALEX TV"  │  ESTRENOS                 EN VIVO  PELÍCULAS  SERIES  20:17 │
+│ │            │  ────────────────────────────────────────────────────────── │
+│ │ Seguir     │ ┌────────┐ ┏━━━━━━━━┓ ┌────────┐ ┌────────┐ ┌────────┐      │
+│ │  viendo    │ │        │ ┃        ┃ │      ★ │ │        │ │        │      │
+│ │ Mis        │ │portada │ ┃ENFOCADA┃ │portada │ │portada │ │portada │      │
+│ │  películas │ │        │ ┃        ┃ │        │ │        │ │        │      │
+│ │ ESTRENOS   │ │▓▓▓░░░░░│ ┃        ┃ │        │ │        │ │        │      │
+│ │ COMEDIA    │ │Título  │ ┃Título  ┃ │Título  │ │Título  │ │Título  │      │
+│ │ DRAMA      │ │2019 ★7 │ ┃2020 ★8 ┃ │2021 ★6 │ │2018 ★7 │ │2022 ★8 │      │
+│ │            │ └────────┘ ┗━━━━━━━━┛ └────────┘ └────────┘ └────────┘      │
+│ └────────────┘   ^ la barra bajo la portada es lo visto (acento)           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  REPRODUCTOR: video a pantalla completa, sin marco                         │
+│                                                                            │
+│   en un canal:                          en una película o un episodio:     │
+│ ┌──────────────────────────────┐      ┌─────────────────────────────────┐  │
+│ │ Nombre del canal   <- texto  │      │ Título            EN PAUSA <-ace.│  │
+│ │ Reproduciendo · HLS          │      │ Temporada 1 · Episodio 3         │  │
+│ └──────────────────────────────┘      │ ▓▓▓▓▓▓▓▓▒▒░░░░░░░░░░░░░░░░░░░░░  │  │
+│                                       │ 9:00 / 22:45   ◀▶ OK ▲ ▼         │  │
+│                                       └─────────────────────────────────┘  │
+│   ^ estos paneles van SOBRE el video, con su propio fondo negro            │
+│     translúcido que no es configurable. Lo visto va en acento.             │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
-Hay además una pantalla de **diagnóstico de red**, donde `bien`, `aviso` y
-`falla` son puntos de color que indican si cada prueba pasó, avisó o falló. Esos
-tres colores tienen que distinguirse entre sí a tres metros.
+Hay además dos fichas (la de una película, con su sinopsis y el botón para
+verla, y la de una serie, con sus temporadas y episodios) que usan las mismas
+tarjetas y el mismo anillo de foco, y una pantalla de **diagnóstico de red**,
+donde `bien`, `aviso` y `falla` son puntos de color que indican si cada prueba
+pasó, avisó o falló. Esos tres colores tienen que distinguirse entre sí a tres
+metros. `bien` es también el color de "Visto" en la lista de episodios.
+
+Las pantallas de verdad, dibujadas con el tema actual, están en la publicación
+`capturas` del repositorio: mirarlas vale más que estos esquemas.
 
 ## 3. Los valores que se pueden cambiar
 
