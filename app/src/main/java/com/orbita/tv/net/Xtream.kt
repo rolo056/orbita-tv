@@ -4,9 +4,10 @@ import com.orbita.tv.data.Account
 import com.orbita.tv.data.NetSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.json.JSONArray
 import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 
 data class Category(val id: String, val name: String)
 
@@ -38,6 +39,12 @@ class Xtream(private val account: Account, net: NetSettings) {
     // 12 segundos de tope real por consulta. Sin esto una peticion colgada se
     // come el arranque entero y el plan B nunca llega a ejecutarse.
     private val client = Http.client(net, readTimeoutSeconds = 20, callTimeoutSeconds = 12)
+
+    // Las listas tienen mas plazo que las consultas chicas: la de canales de un
+    // proveedor grande son varios megas. Sigue siendo un tope de verdad, para
+    // que una lista colgada no se lleve por delante el plan B.
+    private val clienteListas: OkHttpClient =
+        client.newBuilder().callTimeout(25, TimeUnit.SECONDS).build()
     private val ua = net.userAgent
 
     private fun api(vararg extra: Pair<String, String>): String {
@@ -48,16 +55,38 @@ class Xtream(private val account: Account, net: NetSettings) {
         return sb.toString()
     }
 
-    private suspend fun get(url: String): String = withContext(Dispatchers.IO) {
-        val req = Request.Builder().url(url).header("User-Agent", ua).build()
-        client.newCall(req).execute().use { res ->
-            val body = res.body?.string() ?: ""
-            if (!res.isSuccessful) {
-                throw XtreamException("El servidor respondio " + res.code, res.code)
+    private suspend fun get(url: String, cliente: OkHttpClient = client): String =
+        withContext(Dispatchers.IO) {
+            val req = Request.Builder().url(url).header("User-Agent", ua).build()
+            cliente.newCall(req).execute().use { res ->
+                val body = res.body?.string() ?: ""
+                if (!res.isSuccessful) {
+                    throw XtreamException("El servidor respondio " + res.code, res.code)
+                }
+                body
             }
-            body
         }
-    }
+
+    /**
+     * Pide una lista y la arma elemento por elemento, sin tener nunca la
+     * respuesta entera en memoria. Ver XtreamJson.cadaObjeto.
+     */
+    private suspend fun <T : Any> lista(url: String, armar: (JSONObject, Int) -> T?): List<T> =
+        withContext(Dispatchers.IO) {
+            val req = Request.Builder().url(url).header("User-Agent", ua).build()
+            clienteListas.newCall(req).execute().use { res ->
+                if (!res.isSuccessful) {
+                    throw XtreamException("El servidor respondio " + res.code, res.code)
+                }
+                val cuerpo = res.body ?: throw XtreamException("El servidor no devolvio una lista")
+                val out = ArrayList<T>()
+                XtreamJson.cadaObjeto(cuerpo.charStream()) { o, i ->
+                    val x = armar(o, i)
+                    if (x != null) out.add(x)
+                }
+                out
+            }
+        }
 
     suspend fun status(): AccountStatus {
         val body = get(api())
@@ -73,15 +102,8 @@ class Xtream(private val account: Account, net: NetSettings) {
         )
     }
 
-    suspend fun categories(): List<Category> {
-        val arr = array(get(api("action" to "get_live_categories")))
-        val out = ArrayList<Category>(arr.length())
-        for (i in 0 until arr.length()) {
-            val o = arr.optJSONObject(i) ?: continue
-            out.add(Category(o.optString("category_id"), o.optString("category_name")))
-        }
-        return out
-    }
+    suspend fun categories(): List<Category> =
+        lista(api("action" to "get_live_categories")) { o, _ -> XtreamJson.categoria(o) }
 
     suspend fun channels(categoryId: String? = null): List<Channel> {
         val url = if (categoryId == null) {
@@ -89,30 +111,46 @@ class Xtream(private val account: Account, net: NetSettings) {
         } else {
             api("action" to "get_live_streams", "category_id" to categoryId)
         }
-        val arr = array(get(url))
-        val out = ArrayList<Channel>(arr.length())
         // Hay paneles que repiten el mismo canal en la lista. La pantalla usa el
         // id como clave de cada fila, y una clave repetida la cierra de golpe.
         val vistos = HashSet<Int>()
-        for (i in 0 until arr.length()) {
-            val o = arr.optJSONObject(i) ?: continue
-            val id = o.optString("stream_id").toIntOrNull() ?: continue
-            if (!vistos.add(id)) continue
-            val name = o.optString("name")
-            val icon = o.optString("stream_icon")
-            val cat = o.optString("category_id")
-            out.add(
-                Channel(
-                    streamId = id,
-                    name = if (name.isBlank()) "Canal " + id else name,
-                    number = o.optString("num").toIntOrNull() ?: (i + 1),
-                    icon = if (icon.startsWith("http")) icon else null,
-                    categoryId = if (cat.isBlank()) null else cat,
-                )
-            )
-        }
-        return out
+        return lista(url) { o, i -> XtreamJson.canal(o, i)?.takeIf { vistos.add(it.streamId) } }
     }
+
+    // ------------------------------------------------- peliculas y series
+    //
+    // Siempre por categoria, nunca el catalogo entero: en un proveedor grande
+    // son decenas de miles de titulos y decenas de megas, para mostrar una
+    // pantalla donde caben veinte.
+
+    suspend fun vodCategories(): List<Category> =
+        lista(api("action" to "get_vod_categories")) { o, _ -> XtreamJson.categoria(o) }
+
+    suspend fun movies(categoryId: String): List<Movie> {
+        val vistos = HashSet<Int>()
+        return lista(api("action" to "get_vod_streams", "category_id" to categoryId)) { o, _ ->
+            XtreamJson.pelicula(o)?.takeIf { vistos.add(it.streamId) }
+        }
+    }
+
+    suspend fun movieInfo(streamId: Int): MovieInfo? = XtreamJson.fichaPelicula(
+        get(api("action" to "get_vod_info", "vod_id" to streamId.toString()), clienteListas)
+    )
+
+    suspend fun seriesCategories(): List<Category> =
+        lista(api("action" to "get_series_categories")) { o, _ -> XtreamJson.categoria(o) }
+
+    suspend fun series(categoryId: String): List<Series> {
+        val vistos = HashSet<Int>()
+        return lista(api("action" to "get_series", "category_id" to categoryId)) { o, _ ->
+            XtreamJson.serie(o)?.takeIf { vistos.add(it.seriesId) }
+        }
+    }
+
+    suspend fun seriesDetail(seriesId: Int): SeriesDetail = XtreamJson.fichaSerie(
+        get(api("action" to "get_series_info", "series_id" to seriesId.toString()), clienteListas),
+        seriesId,
+    )
 
     /**
      * La lista completa de canales, con plan B.
@@ -141,16 +179,6 @@ class Xtream(private val account: Account, net: NetSettings) {
             for (c in parte) if (!vistos.containsKey(c.streamId)) vistos[c.streamId] = c
         }
         return vistos.values.toList()
-    }
-
-    private fun array(body: String): JSONArray {
-        val direct = runCatching { JSONArray(body) }.getOrNull()
-        if (direct != null) return direct
-        // Algunos paneles avisan del bloqueo con un objeto de error.
-        val msg = runCatching { JSONObject(body).optString("error") }.getOrNull()
-        throw XtreamException(
-            if (msg.isNullOrBlank()) "El servidor no devolvio una lista" else msg
-        )
     }
 
     companion object {
