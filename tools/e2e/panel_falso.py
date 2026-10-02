@@ -287,6 +287,12 @@ class Panel(BaseHTTPRequestHandler):
                 self.json([])
             return
 
+        # La apariencia de la app, la misma que lee el televisor de casa. El
+        # emulador no siempre tiene internet para ir a buscarla.
+        if url.path == "/tema.json":
+            self.archivo(os.path.join(MEDIOS, "tema.json"), "application/json")
+            return
+
         # /live/usuario/clave/100.m3u8  y sus segmentos
         if len(partes) == 4 and partes[0] == "live":
             if partes[1] != USUARIO or partes[2] != CLAVE:

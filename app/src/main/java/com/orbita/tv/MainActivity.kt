@@ -87,6 +87,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val cuentaInicial = cuentaDePrueba()
         val seccionInicial = seccionDePrueba()
+        val aparienciaInicial = aparienciaDePrueba()
         setContent {
             OrbitaTheme {
                 Box(Modifier.fillMaxSize().background(Tint.bg)) {
@@ -102,7 +103,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize().alpha(Tint.skin.bgImageAlpha),
                         )
                     }
-                    App(cuentaInicial, seccionInicial)
+                    App(cuentaInicial, seccionInicial, aparienciaInicial)
                 }
             }
         }
@@ -130,12 +131,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /** Y de donde leer la apariencia, para que la prueba se vea como en casa. */
+    private fun aparienciaDePrueba(): String? {
+        if (!esVarianteDePrueba()) return null
+        return intent?.getStringExtra("apariencia")?.takeIf { it.startsWith("http") }
+    }
+
     private fun esVarianteDePrueba(): Boolean =
         (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 }
 
 @Composable
-private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
+private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaDePrueba: String?) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -321,6 +328,10 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
         settings = Prefs.load(ctx)
         if (cuentaDePrueba != null && cuentaDePrueba != settings.account) {
             settings = settings.copy(account = cuentaDePrueba)
+            Prefs.save(ctx, settings)
+        }
+        if (aparienciaDePrueba != null && aparienciaDePrueba != settings.skinUrl) {
+            settings = settings.copy(skinUrl = aparienciaDePrueba)
             Prefs.save(ctx, settings)
         }
         // Lo guardado de peliculas y series es de una cuenta. Con otra, los

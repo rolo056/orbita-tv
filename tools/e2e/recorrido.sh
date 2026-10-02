@@ -21,6 +21,9 @@ AQUI="$(cd "$(dirname "$0")" && pwd)"
 PAQUETE=com.orbita.tv.prueba
 ENTRADA=com.orbita.tv.MainActivity
 CUENTA="http://10.0.2.2:8080/get.php?username=prueba&password=prueba"
+# La apariencia publicada, servida por el mismo panel de mentira: asi las fotos
+# salen con los colores que ve el televisor de casa y no con los de fabrica.
+APARIENCIA="http://10.0.2.2:8080/tema.json"
 INFORME="$SALIDA/recorrido.txt"
 N=0
 
@@ -72,9 +75,9 @@ abrir() {
   adb shell am force-stop "$PAQUETE"
   sleep 1
   if [ -n "${1:-}" ]; then
-    adb shell "am start -n $PAQUETE/$ENTRADA --es cuenta '$CUENTA' --es seccion '$1'" > /dev/null
+    adb shell "am start -n $PAQUETE/$ENTRADA --es cuenta '$CUENTA' --es apariencia '$APARIENCIA' --es seccion '$1'" > /dev/null
   else
-    adb shell "am start -n $PAQUETE/$ENTRADA --es cuenta '$CUENTA'" > /dev/null
+    adb shell "am start -n $PAQUETE/$ENTRADA --es cuenta '$CUENTA' --es apariencia '$APARIENCIA'" > /dev/null
   fi
 }
 
@@ -87,6 +90,7 @@ ATRAS=KEYCODE_BACK
 
 # ---------------------------------------------------------------- preparar
 
+cp "$AQUI/../../tema.json" "$MEDIOS/tema.json"
 python3 "$AQUI/panel_falso.py" "$MEDIOS" 8080 > "$SALIDA/panel.txt" 2>&1 &
 PANEL=$!
 sleep 2
