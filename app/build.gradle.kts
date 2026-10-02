@@ -115,6 +115,9 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.17")
     testImplementation("androidx.test:core:1.7.0")
     testImplementation("androidx.test.ext:junit:1.3.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.76.0")
-    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.76.0")
+    // 1.60.0 es la ultima legible por Kotlin 2.0: desde la 1.61.0 la libreria se
+    // compila con Kotlin 2.3 y este proyecto no puede leer sus metadatos. Subirla
+    // exige subir antes el Kotlin de toda la app.
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.60.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.60.0")
 }
