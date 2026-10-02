@@ -16,7 +16,10 @@ APK="$1"
 MEDIOS="$2"
 SALIDA="$3"
 AQUI="$(cd "$(dirname "$0")" && pwd)"
-PAQUETE=com.orbita.tv
+# La variante de prueba es otra app (ver app/build.gradle.kts): otro paquete,
+# la misma pantalla de entrada.
+PAQUETE=com.orbita.tv.prueba
+ENTRADA=com.orbita.tv.MainActivity
 CUENTA="http://10.0.2.2:8080/get.php?username=prueba&password=prueba"
 INFORME="$SALIDA/recorrido.txt"
 N=0
@@ -69,9 +72,9 @@ abrir() {
   adb shell am force-stop "$PAQUETE"
   sleep 1
   if [ -n "${1:-}" ]; then
-    adb shell "am start -n $PAQUETE/.MainActivity --es cuenta '$CUENTA' --es seccion '$1'" > /dev/null
+    adb shell "am start -n $PAQUETE/$ENTRADA --es cuenta '$CUENTA' --es seccion '$1'" > /dev/null
   else
-    adb shell "am start -n $PAQUETE/.MainActivity --es cuenta '$CUENTA'" > /dev/null
+    adb shell "am start -n $PAQUETE/$ENTRADA --es cuenta '$CUENTA'" > /dev/null
   fi
 }
 

@@ -37,6 +37,18 @@ android {
     }
 
     buildTypes {
+        // La variante de prueba se instala AL LADO de la app de siempre, como
+        // otra app ("ALEX TV prueba"): probar algo nuevo no obliga a
+        // desinstalar la que funciona ni a volver a cargarle la cuenta. Va con
+        // la misma firma estable, para que una prueba nueva se instale encima
+        // de la prueba anterior.
+        debug {
+            applicationIdSuffix = ".prueba"
+            versionNameSuffix = " de prueba"
+            if (claveEstable.exists()) {
+                signingConfig = signingConfigs.getByName("estable")
+            }
+        }
         release {
             isMinifyEnabled = false
             // No pasa por Play Store: se instala a mano. La contrasena esta a la
