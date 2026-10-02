@@ -98,6 +98,34 @@ jobs:
           ls salida > salida/indice.txt
           cat salida/informe.txt | head -150
 
+      # La variante de prueba queda lista para instalar AL LADO de la app de
+      # siempre, en una direccion que no cambia. Solo se publica si el recorrido
+      # llego hasta el final y la app no se cayo ni una vez.
+      - name: Ver si la variante de prueba se puede entregar
+        id: prueba
+        if: always()
+        run: |
+          if [ -f salida/recorrido.txt ]              && grep -q "== 20\." salida/recorrido.txt              && ! grep -q "HUBO CAIDAS" salida/recorrido.txt; then
+            mkdir -p prueba
+            cp app/build/outputs/apk/debug/app-debug.apk prueba/alex-tv-prueba.apk
+            echo "lista=si" >> "$GITHUB_OUTPUT"
+            echo "La variante de prueba se publica."
+          else
+            echo "La variante de prueba NO se publica: el recorrido no termino limpio."
+          fi
+
+      - name: Publicar la variante de prueba
+        if: always() && steps.prueba.outputs.lista == 'si'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: prueba
+          name: ALEX TV de prueba
+          body: |
+            La variante de prueba de ALEX TV. Se instala al lado de la app de siempre, como "ALEX TV prueba", sin desinstalar nada.
+            No es la version publicada: es lo ultimo de la rama de desarrollo que paso el recorrido en el emulador.
+          prerelease: true
+          files: prueba/alex-tv-prueba.apk
+
       - name: Limpiar la prueba anterior
         if: always()
         env:
