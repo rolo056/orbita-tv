@@ -496,7 +496,9 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
         funcion = Funcion(
             clave = Biblioteca.claveEpisodio(e.id),
             titulo = s.name,
-            subtitulo = "Temporada " + e.season + "  ·  Episodio " + e.number + "  ·  " + e.title,
+            // Sin titulo propio el episodio se llama "Episodio 3": repetirlo sobra.
+            subtitulo = "Temporada " + e.season + "  ·  Episodio " + e.number +
+                (if (e.title.equals("Episodio " + e.number, ignoreCase = true)) "" else "  ·  " + e.title),
             direccion = StreamVariants.forEpisode(settings.account, e.id, e.extension),
             desdeMs = desdeMs,
             episodio = e,

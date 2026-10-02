@@ -92,6 +92,11 @@ PANEL=$!
 sleep 2
 
 anotar "aparato: Android $(adb shell getprop ro.build.version.release | tr -d '\r') (API $(adb shell getprop ro.build.version.sdk | tr -d '\r')), $(adb shell wm size | tr -d '\r')"
+if adb shell ping -c 1 -W 4 raw.githubusercontent.com > /dev/null 2>&1; then
+  anotar "internet desde el emulador: si"
+else
+  anotar "internet desde el emulador: NO (la apariencia remota no se va a poder bajar: se ve la de fabrica)"
+fi
 adb install -r "$APK" > "$SALIDA/instalacion.txt" 2>&1
 anotar "instalacion: $(tail -1 "$SALIDA/instalacion.txt")"
 adb logcat -c
@@ -226,19 +231,14 @@ textos
 # ------------------------------------------------------------------- cierre
 
 paso "Caidas de la app durante el recorrido"
-adb logcat -d -b crash > "$SALIDA/caidas.txt" 2> /dev/null
+# Solo las lineas de error: cada orden de adb arranca su propio proceso y deja
+# lineas de "AndroidRuntime" que no son caidas de nada.
+adb logcat -d 2> /dev/null | grep -E "FATAL EXCEPTION| E AndroidRuntime: " > "$SALIDA/caidas.txt"
 if [ -s "$SALIDA/caidas.txt" ]; then
   anotar "  HUBO CAIDAS:"
   head -60 "$SALIDA/caidas.txt" | tee -a "$INFORME"
 else
-  # En aparatos viejos no hay registro aparte de caidas: se busca en el general.
-  adb logcat -d 2> /dev/null | grep -E "FATAL EXCEPTION|AndroidRuntime: " > "$SALIDA/caidas.txt"
-  if [ -s "$SALIDA/caidas.txt" ]; then
-    anotar "  HUBO CAIDAS:"
-    head -60 "$SALIDA/caidas.txt" | tee -a "$INFORME"
-  else
-    anotar "  ninguna"
-  fi
+  anotar "  ninguna"
 fi
 adb logcat -d 2> /dev/null | grep -iE "orbita|ExoPlayer|MediaCodec" | tail -400 > "$SALIDA/registro-del-aparato.txt"
 

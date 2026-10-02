@@ -361,6 +361,9 @@ fun BoxScope.CineCapas(
             Spacer(Modifier.height(6.dp))
             Hint(if (esTv) "OK para verlo ya · Atrás para salir" else "Toca para ver los controles")
         }
+        // Durante la cuenta atras, OK ya no es "pausa": la barra de abajo
+        // diria una cosa y el aviso otra. Con mando, solo el aviso.
+        if (esTv) return
     }
 
     if (!(visibles || stats.enPausa || objetivo != null)) return
