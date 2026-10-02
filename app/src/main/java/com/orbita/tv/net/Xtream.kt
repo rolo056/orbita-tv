@@ -232,6 +232,40 @@ class Xtream(private val account: Account, net: NetSettings) {
             else -> e.message ?: "No se pudo leer la lista"
         }
 
+        /**
+         * Nulo si la cuenta sirve; si no, por que no.
+         *
+         * Un panel sigue aceptando el usuario y la clave de una cuenta vencida:
+         * contesta que la autenticacion es correcta y despues no entrega nada.
+         * Sin mirar el estado, eso termina en "la lista de canales no llego,
+         * suele ser la red", que manda a revisar justo lo que anda bien.
+         */
+        fun cuentaInservible(s: AccountStatus): String? {
+            val estado = s.status.trim()
+            return when {
+                estado.equals("Expired", ignoreCase = true) -> {
+                    val cuando = fecha(s.expires)
+                    "La cuenta venció" + (if (cuando != null) " el $cuando" else "") +
+                        ". Hay que renovarla con el proveedor: no es un problema de la app " +
+                        "ni de la conexión."
+                }
+                estado.equals("Banned", ignoreCase = true) ||
+                    estado.equals("Disabled", ignoreCase = true) ->
+                    "El proveedor desactivó esta cuenta (estado: $estado). Hay que hablar " +
+                        "con el proveedor: no es un problema de la app ni de la conexión."
+                else -> null
+            }
+        }
+
+        /** La fecha de vencimiento llega en segundos desde 1970, como texto. */
+        private fun fecha(segundos: String): String? {
+            val t = segundos.trim().toLongOrNull() ?: return null
+            if (t <= 0) return null
+            val formato = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.US)
+            formato.timeZone = java.util.TimeZone.getTimeZone("UTC")
+            return formato.format(java.util.Date(t * 1000))
+        }
+
         fun enc(s: String): String = java.net.URLEncoder.encode(s, "UTF-8")
 
         /**

@@ -13,6 +13,11 @@ on:
 permissions:
   contents: write
 
+# Si llega un cambio nuevo mientras corre, la corrida vieja ya no sirve.
+concurrency:
+  group: capturas
+  cancel-in-progress: true
+
 jobs:
   capturas:
     runs-on: ubuntu-latest

@@ -18,6 +18,11 @@ on:
 permissions:
   contents: write
 
+# Si llega un cambio nuevo mientras corre, la corrida vieja ya no sirve.
+concurrency:
+  group: emulador
+  cancel-in-progress: true
+
 jobs:
   recorrido:
     runs-on: ubuntu-latest

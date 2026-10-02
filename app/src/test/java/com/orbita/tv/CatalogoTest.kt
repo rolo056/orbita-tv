@@ -1,8 +1,10 @@
 package com.orbita.tv
 
 import com.orbita.tv.data.Account
+import com.orbita.tv.net.AccountStatus
 import com.orbita.tv.net.Channel
 import com.orbita.tv.net.Movie
+import com.orbita.tv.net.Xtream
 import com.orbita.tv.net.XtreamException
 import com.orbita.tv.net.XtreamJson
 import com.orbita.tv.player.StreamVariants
@@ -288,6 +290,24 @@ class CatalogoTest {
         assertEquals("Episodio", XtreamJson.tituloDeEpisodio("  ", 0))
         // Sin la marca de temporada y episodio, el titulo se deja como esta.
         assertEquals("Capítulo final", XtreamJson.tituloDeEpisodio("Capítulo final", 12))
+    }
+
+    // --------------------------------------------------------------- cuenta
+
+    @Test
+    fun `una cuenta vencida se dice como vencida y con su fecha`() {
+        // Asi contesta un panel real con la cuenta vencida: autenticacion correcta.
+        val vencida = AccountStatus(true, "Expired", "1790812800", 2, 0)
+        val mensaje = Xtream.cuentaInservible(vencida)!!
+        assertTrue(mensaje, mensaje.contains("venció el 01/10/2026"))
+
+        assertNull(Xtream.cuentaInservible(AccountStatus(true, "Active", "1893456000", 2, 0)))
+        // Un panel que no informa el estado no es una cuenta inservible.
+        assertNull(Xtream.cuentaInservible(AccountStatus(true, "desconocido", "", 0, 0)))
+        assertNotNull(Xtream.cuentaInservible(AccountStatus(true, "Banned", "null", 1, 0)))
+        // Vencida y sin fecha legible: se dice igual, sin inventar la fecha.
+        val sinFecha = Xtream.cuentaInservible(AccountStatus(true, "expired", "", 1, 0))!!
+        assertTrue(sinFecha, sinFecha.startsWith("La cuenta venció. "))
     }
 
     // --------------------------------------------------------- direcciones

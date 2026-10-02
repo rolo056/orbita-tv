@@ -205,14 +205,6 @@ fun FichaSerieScreen(
     val temporadas = detalle?.seasons ?: emptyList()
     val punto = biblioteca.puntos[serie.seriesId]
 
-    var elegida by remember(serie.seriesId) { mutableIntStateOf(-1) }
-    val numeroTemporada = when {
-        elegida >= 0 && temporadas.any { it.number == elegida } -> elegida
-        punto != null && temporadas.any { it.number == punto.temporada } -> punto.temporada
-        else -> temporadas.firstOrNull()?.number ?: -1
-    }
-    val episodios = temporadas.firstOrNull { it.number == numeroTemporada }?.episodes ?: emptyList()
-
     // El episodio con el que se sigue: el ultimo abierto si quedo a medias, o
     // el siguiente si se termino.
     val siguiente: Episode? = run {
@@ -223,6 +215,16 @@ fun FichaSerieScreen(
         val av = biblioteca.avanceDeEpisodio(todos[i].id)
         if (av != null && av.terminado) todos.getOrNull(i + 1) else todos[i]
     }
+
+    // La temporada a la vista: la que se elija a mano, y si no la del episodio
+    // con el que se sigue (que puede ser ya la temporada siguiente).
+    var elegida by remember(serie.seriesId) { mutableIntStateOf(-1) }
+    val numeroTemporada = when {
+        elegida >= 0 && temporadas.any { it.number == elegida } -> elegida
+        siguiente != null -> siguiente.season
+        else -> temporadas.firstOrNull()?.number ?: -1
+    }
+    val episodios = temporadas.firstOrNull { it.number == numeroTemporada }?.episodes ?: emptyList()
 
     val focoEpisodio = remember { FocusRequester() }
     val estadoLista = rememberLazyListState()

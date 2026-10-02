@@ -276,6 +276,14 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
                 allChannels = emptyList()
                 return
             }
+            // Una cuenta vencida autentica bien y despues no entrega nada.
+            val motivo = Xtream.cuentaInservible(estado)
+            if (motivo != null) {
+                error = motivo
+                categories = emptyList()
+                allChannels = emptyList()
+                return
+            }
             scope.launch { cargarCatalogos() }
             categories = runCatching { xt.categories() }.getOrDefault(emptyList())
             allChannels = xt.allChannels(categories)
@@ -352,6 +360,12 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
 
     // ------------------------------------------------ peliculas y series
 
+    // Un solo cliente del panel para todo el catalogo. Uno nuevo por consulta
+    // deja detras conexiones abiertas que nadie vuelve a usar.
+    val panel = remember(settings.account, settings.net) {
+        Xtream(settings.account, settings.net)
+    }
+
     fun hayPeliculasPorSeguir(): Boolean = biblioteca.recientes.any {
         !it.serie && biblioteca.avanceDePelicula(it.id)?.aMedias == true
     }
@@ -361,8 +375,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
             if (id == CAT_SEGUIR || id == CAT_FAVORITOS) {
                 estantePeliculas.abrirLocal(id)
             } else {
-                val xt = Xtream(settings.account, settings.net)
-                estantePeliculas.abrir(id) { xt.movies(it) }
+                estantePeliculas.abrir(id) { panel.movies(it) }
             }
         }
         enfocarPelicula = null
@@ -374,8 +387,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
             if (id == CAT_SEGUIR || id == CAT_FAVORITOS) {
                 estanteSeries.abrirLocal(id)
             } else {
-                val xt = Xtream(settings.account, settings.net)
-                estanteSeries.abrir(id) { xt.series(it) }
+                estanteSeries.abrir(id) { panel.series(it) }
             }
         }
         enfocarSerie = null
@@ -414,8 +426,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
         enfocarPelicula = m.streamId
         screen = Screen.FICHA_PELICULA
         scope.launch {
-            val xt = Xtream(settings.account, settings.net)
-            val info = runCatching { xt.movieInfo(m.streamId) }.getOrNull()
+            val info = runCatching { panel.movieInfo(m.streamId) }.getOrNull()
             if (pelicula?.streamId == m.streamId) {
                 infoPelicula = info
                 cargandoInfo = false
@@ -448,7 +459,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
         errorSerie = null
         scope.launch {
             try {
-                val d = Xtream(settings.account, settings.net).seriesDetail(id)
+                val d = panel.seriesDetail(id)
                 if (serie?.seriesId == id) detalleSerie = d
             } catch (e: CancellationException) {
                 throw e
