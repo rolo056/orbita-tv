@@ -262,6 +262,7 @@ private fun App() {
             stats = stats,
             onCategory = { selectedCategory = it },
             onPlay = { reproducir(it) },
+            onStop = { engine?.stop() },
             onToggleFavorite = { alternarFavorito(it) },
             onDiagnostics = {
                 findings.clear()
@@ -307,6 +308,14 @@ private fun App() {
         Screen.SETTINGS -> SettingsScreen(
             settings = settings,
             onChange = { s ->
+                // El bufer y el cliente de red se fijan al crear el reproductor.
+                // Si cambia algo de eso, se descarta: el proximo canal arma uno
+                // nuevo con los ajustes al dia. Antes el cambio de bufer no
+                // tenia efecto hasta cerrar y volver a abrir la app.
+                if (s.net != settings.net || s.account != settings.account) {
+                    engine?.release()
+                    engine = null
+                }
                 settings = s
                 engine?.updateSettings(s)
                 scope.launch { Prefs.save(ctx, s) }

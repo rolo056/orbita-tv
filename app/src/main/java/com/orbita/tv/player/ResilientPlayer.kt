@@ -457,6 +457,21 @@ class ResilientPlayer(
     }
 
     /**
+     * El usuario cerro lo que estaba viendo. A diferencia de [onBackground], no
+     * se retoma solo al volver: no queda nada pendiente.
+     */
+    fun stop() {
+        retryJob?.cancel()
+        deadlineJob?.cancel()
+        currentStreamId = -1
+        variants = emptyList()
+        player.stop()
+        player.clearMediaItems()
+        resetWatchdog()
+        _stats.value = PlaybackStats()
+    }
+
+    /**
      * La app dejo de estar en pantalla. Se corta todo: un reproductor
      * reintentando en segundo plano, invisible, es como se acumulan miles de
      * conexiones sin que nadie se entere.

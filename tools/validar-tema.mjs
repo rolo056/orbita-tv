@@ -23,6 +23,7 @@ const ESQUEMA = {
   fondo: { t: 'color' }, tarjeta: { t: 'color' }, tarjetaFoco: { t: 'color' },
   linea: { t: 'color' }, texto: { t: 'color' }, textoSuave: { t: 'color' },
   acento: { t: 'color' }, aviso: { t: 'color' }, falla: { t: 'color' },
+  bien: { t: 'color' },
   esquinas: { t: 'num', min: 0, max: 40 },
   grosorFoco: { t: 'num', min: 0, max: 8 },
   grosorReposo: { t: 'num', min: 0, max: 8 },
@@ -184,7 +185,7 @@ if (typeof tema.grosorFoco === 'number') {
 
 // ---- 4. Los tres colores de estado ----
 console.log(`\n${C.b}4 · Colores de estado${C.r}`);
-const estados = [['acento', 'aviso'], ['acento', 'falla'], ['aviso', 'falla']];
+const estados = [['bien', 'aviso'], ['bien', 'falla'], ['aviso', 'falla']];
 for (const [a, b] of estados) {
   if (!rgb(tema[a] || '') || !rgb(tema[b] || '')) continue;
   const d = distanciaTono(tema[a], tema[b]);

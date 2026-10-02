@@ -23,10 +23,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.orbita.tv.data.Skin
@@ -56,6 +60,7 @@ object Tint {
     val accent: Color get() = Color(skin.accent)
     val warn: Color get() = Color(skin.warn)
     val fail: Color get() = Color(skin.fail)
+    val ok: Color get() = Color(skin.ok)
 }
 
 @Composable
@@ -87,15 +92,57 @@ fun OrbitaTheme(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+fun SectionTitle(text: String, modifier: Modifier = Modifier, maxLines: Int = Int.MAX_VALUE) {
     Text(
         text = text,
         color = Tint.textSoft,
         fontSize = 13.sp,
         fontWeight = FontWeight.Medium,
         letterSpacing = 1.sp,
+        maxLines = maxLines,
+        overflow = TextOverflow.Ellipsis,
         modifier = modifier,
     )
+}
+
+/**
+ * Escribe la primera de las opciones que cabe entera en una linea.
+ *
+ * Existe porque la etiqueta de un boton no puede partirse: en una barra angosta
+ * "Diagnostico de red" se dibujaba "Diagnostic / o de red". Se va de la mas
+ * completa a la mas corta, y si ni la ultima cabe se recorta con puntos
+ * suspensivos, siempre en una sola linea.
+ */
+@Composable
+fun TextoQueCabe(
+    opciones: List<String>,
+    color: Color,
+    fontSize: TextUnit,
+    modifier: Modifier = Modifier,
+    fontWeight: FontWeight? = null,
+) {
+    Layout(
+        modifier = modifier,
+        content = {
+            opciones.forEach { t ->
+                Text(
+                    t, color = color, fontSize = fontSize, fontWeight = fontWeight,
+                    maxLines = 1, softWrap = false,
+                )
+            }
+            Text(
+                opciones.last(), color = color, fontSize = fontSize, fontWeight = fontWeight,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
+        },
+    ) { medibles, limites ->
+        val sueltas = medibles.dropLast(1).map { it.measure(Constraints()) }
+        val recortada = medibles.last().measure(limites.copy(minWidth = 0, minHeight = 0))
+        val elegida = sueltas.firstOrNull { it.width <= limites.maxWidth } ?: recortada
+        val ancho = elegida.width.coerceIn(limites.minWidth, limites.maxWidth)
+        val alto = elegida.height.coerceIn(limites.minHeight, limites.maxHeight)
+        layout(ancho, alto) { elegida.placeRelative(0, 0) }
+    }
 }
 
 /**

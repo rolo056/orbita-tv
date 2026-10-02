@@ -67,7 +67,7 @@ Eso manda tres cosas antes que cualquier gusto estético:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Hay además una pantalla de **diagnóstico de red**, donde `acento`, `aviso` y
+Hay además una pantalla de **diagnóstico de red**, donde `bien`, `aviso` y
 `falla` son puntos de color que indican si cada prueba pasó, avisó o falló. Esos
 tres colores tienen que distinguirse entre sí a tres metros.
 
@@ -81,9 +81,10 @@ tres colores tienen que distinguirse entre sí a tres metros.
 | `linea` | color | — | `#243352` | Borde de las tarjetas en reposo |
 | `texto` | color | — | `#E8EDF5` | Texto principal |
 | `textoSuave` | color | — | `#9BA7BD` | Texto secundario, rótulos, ayudas |
-| `acento` | color | — | `#5FC9A0` | Anillo de foco, categoría activa, "todo bien" |
+| `acento` | color | — | `#5FC9A0` | Anillo de foco, categoría o sección activa |
 | `aviso` | color | — | `#E0B252` | Advertencias del diagnóstico |
 | `falla` | color | — | `#E2705F` | Errores y canal detenido |
+| `bien` | color | — | `#5FC9A0` | "Todo bien": la prueba que pasó, la opción activada. Aparte del acento para que un acento rojo no haga leer un "activado" como error |
 | `esquinas` | número (dp) | 0 – 40 | `10` | Redondeo de tarjetas |
 | `grosorFoco` | número (dp) | 0 – 8 | `2` | Grosor del anillo al enfocar |
 | `grosorReposo` | número (dp) | 0 – 8 | `1` | Grosor del borde en reposo |

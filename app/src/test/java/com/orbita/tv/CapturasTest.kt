@@ -1,5 +1,6 @@
 package com.orbita.tv
 
+import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,7 @@ import com.orbita.tv.ui.DiagnosticsScreen
 import com.orbita.tv.ui.HomeScreen
 import com.orbita.tv.ui.LoginScreen
 import com.orbita.tv.ui.OrbitaTheme
+import com.orbita.tv.ui.Seccion
 import com.orbita.tv.ui.SettingsScreen
 import com.orbita.tv.ui.Tint
 import org.junit.After
@@ -29,6 +31,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
@@ -107,6 +111,16 @@ class CapturasTest {
         Tint.fontFamily = if (conArchivo) archivo() else null
     }
 
+    /**
+     * Un aparato que se maneja con el dedo. Sin esto la app se cree en un
+     * televisor: lo decide mirando si hay pantalla tactil, y el entorno de
+     * pruebas no declara ninguna.
+     */
+    private fun conDedo() {
+        val pm = RuntimeEnvironment.getApplication().packageManager
+        Shadows.shadowOf(pm).setSystemFeature(PackageManager.FEATURE_TOUCHSCREEN, true)
+    }
+
     /** La tipografia del diseno. La baja el paso de CI; si no esta, se dibuja con la del sistema. */
     private fun archivo(): FontFamily? {
         val normal = File("build/fuentes/Archivo.ttf")
@@ -131,6 +145,7 @@ class CapturasTest {
         cargando: Boolean = false,
         error: String? = null,
         aviso: String? = null,
+        secciones: List<Seccion> = listOf(Seccion.EN_VIVO),
     ) {
         HomeScreen(
             categories = categorias,
@@ -143,6 +158,7 @@ class CapturasTest {
             stats = PlaybackStats(),
             onCategory = {},
             onPlay = {},
+            onStop = {},
             onToggleFavorite = {},
             onDiagnostics = {},
             onSettings = {},
@@ -150,6 +166,7 @@ class CapturasTest {
             updating = false,
             onUpdate = {},
             notice = aviso,
+            secciones = secciones,
         )
     }
 
@@ -199,6 +216,12 @@ class CapturasTest {
                 "perfecto y aun asi fallar si ESTA red no deja salir por su puerto. " +
                 "Abre Diagnostico de red: te dice cual de las causas es.",
         )
+    }
+
+    /** Con las tres secciones a la vista: asi queda la cabecera cuando hay peliculas y series. */
+    @Test
+    fun tv_inicio_con_secciones() = capturar("tv-10-inicio-con-secciones") {
+        Inicio(secciones = listOf(Seccion.EN_VIVO, Seccion.PELICULAS, Seccion.SERIES))
     }
 
     @Test
@@ -253,9 +276,24 @@ class CapturasTest {
 
     @Test
     @Config(sdk = [34], qualifiers = TELEFONO_VERTICAL)
-    fun telefono_vertical_inicio() = capturar("tel-01-inicio-vertical") { Inicio() }
+    fun telefono_vertical_inicio() {
+        conDedo()
+        capturar("tel-01-inicio-vertical") { Inicio() }
+    }
 
     @Test
     @Config(sdk = [34], qualifiers = TELEFONO_HORIZONTAL)
-    fun telefono_horizontal_inicio() = capturar("tel-02-inicio-horizontal") { Inicio() }
+    fun telefono_horizontal_inicio() {
+        conDedo()
+        capturar("tel-02-inicio-horizontal") { Inicio() }
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = TELEFONO_VERTICAL)
+    fun telefono_vertical_con_secciones() {
+        conDedo()
+        capturar("tel-03-inicio-con-secciones") {
+            Inicio(secciones = listOf(Seccion.EN_VIVO, Seccion.PELICULAS, Seccion.SERIES))
+        }
+    }
 }

@@ -50,6 +50,8 @@ fun BrandMark(
             fontSize = size,
             fontWeight = FontWeight.Black,
             letterSpacing = (-0.5).sp,
+            maxLines = 1,
+            softWrap = false,
         )
         // Sin esquinas redondeadas: el bloque macizo es el gesto del logotipo.
         Text(
@@ -58,6 +60,8 @@ fun BrandMark(
             fontSize = size,
             fontWeight = FontWeight.Black,
             letterSpacing = (-0.5).sp,
+            maxLines = 1,
+            softWrap = false,
             modifier = Modifier
                 .background(Tint.accent)
                 .padding(horizontal = 7.dp, vertical = 4.dp),

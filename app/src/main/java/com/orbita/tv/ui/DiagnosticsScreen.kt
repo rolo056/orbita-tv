@@ -104,7 +104,7 @@ fun DiagnosticsScreen(
 }
 
 private fun color(level: Level): Color = when (level) {
-    Level.OK -> Tint.accent
+    Level.OK -> Tint.ok
     Level.WARN -> Tint.warn
     Level.FAIL -> Tint.fail
     Level.INFO -> Tint.textSoft

@@ -91,9 +91,13 @@ class Xtream(private val account: Account, net: NetSettings) {
         }
         val arr = array(get(url))
         val out = ArrayList<Channel>(arr.length())
+        // Hay paneles que repiten el mismo canal en la lista. La pantalla usa el
+        // id como clave de cada fila, y una clave repetida la cierra de golpe.
+        val vistos = HashSet<Int>()
         for (i in 0 until arr.length()) {
             val o = arr.optJSONObject(i) ?: continue
             val id = o.optString("stream_id").toIntOrNull() ?: continue
+            if (!vistos.add(id)) continue
             val name = o.optString("name")
             val icon = o.optString("stream_icon")
             val cat = o.optString("category_id")

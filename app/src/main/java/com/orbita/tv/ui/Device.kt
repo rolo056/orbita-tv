@@ -17,8 +17,10 @@ import androidx.compose.ui.platform.LocalContext
  * solo estorban; en un telefono no hay mando, y sin controles en pantalla no hay
  * forma de cambiar de canal.
  *
- * Se pregunta de dos maneras porque ninguna es infalible: algunas cajas Android
- * no declaran leanback pero si se reportan como televisor al sistema.
+ * Se pregunta de varias maneras porque ninguna es infalible: algunas cajas
+ * Android no declaran leanback pero si se reportan como televisor al sistema, y
+ * otras no declaran nada de eso pero tampoco tienen pantalla tactil, que al
+ * final es lo unico que importa aca.
  */
 @Composable
 fun isTvDevice(): Boolean {
@@ -30,6 +32,10 @@ private fun detectTv(ctx: Context): Boolean {
     val pm = ctx.packageManager
     if (pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) return true
     if (pm.hasSystemFeature("android.hardware.type.television")) return true
+    val modo = ctx.resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK
+    if (modo == Configuration.UI_MODE_TYPE_TELEVISION) return true
     val uiMode = ctx.getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
-    return uiMode?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+    if (uiMode?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) return true
+    // Sin pantalla tactil no hay dedo: se maneja con mando, sea lo que sea.
+    return !pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
 }
