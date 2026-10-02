@@ -15,11 +15,21 @@ mkdir -p "$DEST/hls"
 ffmpeg -hide_banner -loglevel error -y \
   -f lavfi -i "testsrc2=size=640x360:rate=25" \
   -f lavfi -i "sine=frequency=440:sample_rate=44100" \
-  -t 180 \
+  -t 600 \
   -c:v libx264 -preset ultrafast -profile:v baseline -level 3.0 -g 50 -pix_fmt yuv420p \
   -c:a aac -b:a 96k \
   -movflags +faststart \
   "$DEST/pelicula.mp4"
+
+# El episodio es corto: para llegar al final y ver si pasa solo al siguiente.
+ffmpeg -hide_banner -loglevel error -y \
+  -f lavfi -i "testsrc2=size=640x360:rate=25" \
+  -f lavfi -i "sine=frequency=550:sample_rate=44100" \
+  -t 120 \
+  -c:v libx264 -preset ultrafast -profile:v baseline -level 3.0 -g 50 -pix_fmt yuv420p \
+  -c:a aac -b:a 96k \
+  -movflags +faststart \
+  "$DEST/episodio.mp4"
 
 ffmpeg -hide_banner -loglevel error -y \
   -f lavfi -i "testsrc2=size=640x360:rate=25" \
@@ -33,4 +43,5 @@ ffmpeg -hide_banner -loglevel error -y \
   "$DEST/hls/base.m3u8"
 
 echo "pelicula: $(stat -c %s "$DEST/pelicula.mp4") bytes"
+echo "episodio: $(stat -c %s "$DEST/episodio.mp4") bytes"
 echo "segmentos del canal: $(ls "$DEST/hls" | grep -c '^seg_')"

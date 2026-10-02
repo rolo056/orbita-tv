@@ -216,7 +216,7 @@ teclas 12 $OK
 foto episodio-en-marcha
 
 paso "19. Derecha hasta el final: termina y pasa solo al episodio siguiente"
-teclas 1 $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER
+teclas 1 $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER
 sleep 9
 foto cuenta-atras
 sleep 14
@@ -227,6 +227,59 @@ paso "20. Atras: la ficha marca lo visto"
 teclas 4 $ATRAS
 foto ficha-serie-despues
 textos
+
+# ------------------------------------------------------ cortes de conexion
+#
+# Para lo que existe esta app. El corte tipico de un enlace satelital no da
+# error: la conexion queda abierta y dejan de llegar datos. Se imita tal cual,
+# tirando en silencio los paquetes hacia y desde el panel.
+
+cortar() {
+  sudo iptables -I INPUT -p tcp --dport 8080 -j DROP
+  sudo iptables -I OUTPUT -p tcp --sport 8080 -j DROP
+  anotar "  [conexion cortada]"
+}
+
+reponer() {
+  sudo iptables -D INPUT -p tcp --dport 8080 -j DROP
+  sudo iptables -D OUTPUT -p tcp --sport 8080 -j DROP
+  anotar "  [conexion repuesta]"
+}
+
+if sudo -n true 2> /dev/null && command -v iptables > /dev/null; then
+
+  paso "21. Pelicula con corte: se adelanta lejos justo cuando no hay conexion"
+  abrir peliculas
+  sleep 18
+  teclas 4 $OK
+  foco
+  teclas 12 $OK
+  foto antes-del-corte
+  cortar
+  teclas 20 $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER $DER
+  foto durante-el-corte
+  reponer
+  sleep 40
+  teclas 2 $ARRIBA
+  foto despues-del-corte
+
+  paso "22. Canal con corte: 40 segundos sin datos, a pantalla completa"
+  abrir ""
+  sleep 18
+  teclas 10 $OK
+  teclas 8 $OK
+  foto canal-antes-del-corte
+  cortar
+  sleep 40
+  foto canal-durante-el-corte
+  reponer
+  sleep 40
+  teclas 2 $OK
+  foto canal-despues-del-corte
+
+else
+  paso "21 y 22. Cortes de conexion: no se pudieron hacer (hace falta iptables)"
+fi
 
 # ------------------------------------------------------------------- cierre
 

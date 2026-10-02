@@ -11,7 +11,7 @@ peliculas y las series, y entrega video de verdad:
 
 Uso:  panel_falso.py <carpeta-de-medios> [puerto]
 
-La carpeta tiene que traer pelicula.mp4 y hls/seg_000.ts ... (ver
+La carpeta tiene que traer pelicula.mp4, episodio.mp4 y hls/seg_000.ts ... (ver
 preparar-medios.sh). Todo lo que se pide queda anotado en la salida.
 """
 import json
@@ -111,7 +111,7 @@ def ficha_de_serie(serie_id):
                 "title": "Serie de prueba - S%02dE%02d - Episodio %d" % (temporada, n, n),
                 "container_extension": "mp4",
                 # A proposito: "info" vacio llega como lista, no como objeto.
-                "info": {"duration_secs": 60, "duration": "00:01:00"} if n % 2 else [],
+                "info": {"duration_secs": 120, "duration": "00:02:00"} if n % 2 else [],
                 "season": temporada,
             }
             for n in range(1, cuantos + 1)
@@ -131,8 +131,8 @@ def ficha_de_pelicula(vod_id):
             "director": "Marta Cinco",
             "genre": "Prueba",
             "releasedate": "2019-03-08",
-            "duration_secs": 180,
-            "duration": "00:03:00",
+            "duration_secs": 600,
+            "duration": "00:10:00",
             "rating": base["rating"],
             "backdrop_path": [],
         },
@@ -307,7 +307,8 @@ class Panel(BaseHTTPRequestHandler):
             if partes[1] != USUARIO or partes[2] != CLAVE:
                 self.texto("", "text/plain", 403)
                 return
-            self.archivo(os.path.join(MEDIOS, "pelicula.mp4"), "video/mp4")
+            nombre = "pelicula.mp4" if partes[0] == "movie" else "episodio.mp4"
+            self.archivo(os.path.join(MEDIOS, nombre), "video/mp4")
             return
 
         self.texto("no esta", "text/plain", 404)
