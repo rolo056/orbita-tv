@@ -1,0 +1,87 @@
+name: Capturas de pantalla
+
+# Dibuja cada pantalla de la app a un PNG y las deja donde se puedan mirar.
+#
+# Corre solo en la rama de desarrollo, y NO publica ninguna version de la app:
+# la etiqueta "ultima", que es la que instala el televisor, no se toca.
+
+on:
+  push:
+    branches: [desarrollo]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  capturas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar el SDK
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          MGR="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$MGR" ]; then
+            yes | "$MGR" --licenses >/dev/null 2>&1 || true
+            "$MGR" --install "platforms;android-35" "build-tools;35.0.0" || true
+          fi
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      # La tipografia del diseno, para dibujar tambien los temas que la usan.
+      # Si no baja, esas capturas salen con la del sistema.
+      - name: Bajar la tipografia del diseno
+        run: |
+          mkdir -p app/build/fuentes
+          B="https://raw.githubusercontent.com/google/fonts/main/ofl"
+          curl -fsSL --max-time 60 -o app/build/fuentes/Archivo.ttf "$B/archivo/Archivo%5Bwdth,wght%5D.ttf" || true
+          curl -fsSL --max-time 60 -o app/build/fuentes/ArchivoBlack.ttf "$B/archivoblack/ArchivoBlack-Regular.ttf" || true
+          ls -la app/build/fuentes
+
+      - name: Dibujar las pantallas
+        run: |
+          set -o pipefail
+          gradle :app:testDebugUnitTest --no-daemon --stacktrace 2>&1 | tee registro.txt
+
+      - name: Reunir lo que salio
+        if: always()
+        run: |
+          mkdir -p salida
+          cp app/build/capturas/*.png salida/ 2>/dev/null || true
+          # El registro completo es grande: se guarda el final y las lineas de error.
+          {
+            echo "commit ${{ github.sha }}"
+            echo "=== errores ==="
+            grep -nE "^e: |error:|FAILED|Exception|Caused by|NoSuchMethod|NoClassDef" registro.txt | head -150 || true
+            echo "=== final del registro ==="
+            tail -200 registro.txt
+          } > salida/registro.txt 2>/dev/null || true
+          ls salida > salida/indice.txt
+          cat salida/indice.txt
+
+      # Se borra la publicacion anterior para que no queden capturas viejas
+      # mezcladas con las nuevas.
+      - name: Limpiar las capturas anteriores
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete capturas --yes --cleanup-tag --repo "${{ github.repository }}" || true
+
+      - name: Publicar donde se puedan ver
+        if: always()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: capturas
+          name: Capturas de pantalla de la rama de desarrollo
+          body: Pantallas dibujadas automaticamente. No es una version de la app.
+          prerelease: true
+          files: salida/*
