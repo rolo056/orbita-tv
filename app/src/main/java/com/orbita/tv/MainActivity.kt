@@ -1,5 +1,6 @@
 package com.orbita.tv
 
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -84,6 +85,8 @@ private data class Funcion(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val cuentaInicial = cuentaDePrueba()
+        val seccionInicial = seccionDePrueba()
         setContent {
             OrbitaTheme {
                 Box(Modifier.fillMaxSize().background(Tint.bg)) {
@@ -99,15 +102,40 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize().alpha(Tint.skin.bgImageAlpha),
                         )
                     }
-                    App()
+                    App(cuentaInicial, seccionInicial)
                 }
             }
         }
     }
+
+    /**
+     * Solo en la variante de prueba, la que no se publica: deja abrir la app ya
+     * conectada a una cuenta, pasandosela al lanzarla. Existe para la prueba
+     * automatica en emulador, donde no hay nadie que escriba en la pantalla de
+     * conexion. En la app que se instala en el televisor esto no hace nada.
+     */
+    private fun cuentaDePrueba(): Account? {
+        if (!esVarianteDePrueba()) return null
+        val direccion = intent?.getStringExtra("cuenta") ?: return null
+        return Xtream.parsePasted(direccion)?.takeIf { !it.isEmpty }
+    }
+
+    /** Igual que la cuenta: solo en la variante de prueba, arrancar en una seccion. */
+    private fun seccionDePrueba(): Seccion? {
+        if (!esVarianteDePrueba()) return null
+        return when (intent?.getStringExtra("seccion")) {
+            "peliculas" -> Seccion.PELICULAS
+            "series" -> Seccion.SERIES
+            else -> null
+        }
+    }
+
+    private fun esVarianteDePrueba(): Boolean =
+        (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 }
 
 @Composable
-private fun App() {
+private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -283,6 +311,10 @@ private fun App() {
 
     LaunchedEffect(Unit) {
         settings = Prefs.load(ctx)
+        if (cuentaDePrueba != null && cuentaDePrueba != settings.account) {
+            settings = settings.copy(account = cuentaDePrueba)
+            Prefs.save(ctx, settings)
+        }
         // Lo guardado de peliculas y series es de una cuenta. Con otra, los
         // mismos numeros son otros titulos: se empieza de cero.
         val guardada = Prefs.loadLibrary(ctx)
@@ -471,6 +503,15 @@ private fun App() {
             add(Seccion.EN_VIVO)
             if (estantePeliculas.categorias.isNotEmpty()) add(Seccion.PELICULAS)
             if (estanteSeries.categorias.isNotEmpty()) add(Seccion.SERIES)
+        }
+    }
+
+    var seccionPendiente by remember { mutableStateOf(seccionDePrueba) }
+    LaunchedEffect(secciones, seccionPendiente) {
+        val s = seccionPendiente ?: return@LaunchedEffect
+        if (s in secciones) {
+            seccionPendiente = null
+            irASeccion(s)
         }
     }
 
