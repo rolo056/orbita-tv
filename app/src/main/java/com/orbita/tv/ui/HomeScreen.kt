@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -399,6 +400,24 @@ fun HomeScreen(
                 }
                 if (mostrarInfo && stats.fatalError == null) PlayerInfoBar(stats, esTv)
                 if (mostrarHud) PlayerHud(stats)
+                // Una imagen quieta sin explicacion parece la app colgada. Si
+                // no hay imagen corriendo, arriba dice por que.
+                if (!stats.onAir && stats.fatalError == null && stats.retryRound == 0 &&
+                    stats.status.isNotBlank() && enVentana != null && !mostrarHud
+                ) {
+                    Text(
+                        stats.status + "…",
+                        color = Tint.text,
+                        fontSize = 14.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(24.dp)
+                            .background(Color(0xB3000000), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    )
+                }
                 if (!esTv && stats.fatalError == null) {
                     Row(
                         Modifier.align(Alignment.TopStart).padding(16.dp),
