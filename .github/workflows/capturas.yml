@@ -61,7 +61,7 @@ jobs:
           {
             echo "commit ${{ github.sha }}"
             echo "=== errores ==="
-            grep -nE "^e: |error:|FAILED|Exception|Caused by|NoSuchMethod|NoClassDef" registro.txt | head -150 || true
+            grep -nE "^e: |error:|FAILED|Exception|Caused by|NoSuchMethod|NoClassDef|AssertionError|ComparisonFailure|expected:" registro.txt | head -200 || true
             echo "=== final del registro ==="
             tail -200 registro.txt
           } > salida/registro.txt 2>/dev/null || true

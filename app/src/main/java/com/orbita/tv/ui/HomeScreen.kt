@@ -328,7 +328,12 @@ fun HomeScreen(
                             setShutterBackgroundColor(android.graphics.Color.BLACK)
                         }
                     },
-                    update = { it.player = engine?.player },
+                    update = {
+                        it.player = engine?.player
+                        // Sin tocar el mando durante horas, el televisor no
+                        // tiene que saltar al protector de pantalla.
+                        it.keepScreenOn = enVentana != null
+                    },
                     modifier = Modifier.fillMaxSize(),
                 )
             }
@@ -456,30 +461,7 @@ private fun Contenido(
 
     if (compacto) {
         Column(Modifier.fillMaxSize().padding(pad)) {
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                BrandMark(size = 18.sp)
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(hora, color = Tint.textSoft, fontSize = 14.sp, maxLines = 1, softWrap = false)
-                    FocusRow(onClick = onDiagnostics) {
-                        Text("Red", color = Tint.text, fontSize = 14.sp, maxLines = 1, softWrap = false)
-                    }
-                    FocusRow(onClick = onSettings) {
-                        Text("Ajustes", color = Tint.text, fontSize = 14.sp, maxLines = 1, softWrap = false)
-                    }
-                }
-            }
-            Spacer(Modifier.height(skin.gap.dp))
-            if (secciones.size > 1) {
-                Pestanas(seccion, secciones, onSeccion)
-                Spacer(Modifier.height(skin.gap.dp))
-            }
+            CabeceraCompacta(hora, seccion, secciones, onSeccion, onDiagnostics, onSettings)
             BannerActualizacion(update, updating, onUpdate)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item { Chip("Todos", seleccionada == null) { onCategory(null) } }
@@ -506,52 +488,28 @@ private fun Contenido(
 
     Row(Modifier.fillMaxSize().padding(pad)) {
         // ---- categorias ----
-        Column(
-            Modifier.width(lateral).fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(skin.gap.dp),
+        BarraLateral(
+            ancho = lateral,
+            onDiagnostics = onDiagnostics,
+            onSettings = onSettings,
+            arriba = { BannerActualizacion(update, updating, onUpdate) },
         ) {
-            BrandMark(size = 22.sp)
-            Spacer(Modifier.height(6.dp))
-            SectionTitle("CATEGORÍAS", maxLines = 1)
-            BannerActualizacion(update, updating, onUpdate)
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(skin.gap.dp * 0.6f),
-                modifier = Modifier.weight(1f),
-            ) {
+            item {
+                FilaCategoria("Todos", conteos.values.sum(), seleccionada == null) {
+                    onCategory(null)
+                }
+            }
+            if (favoritos.isNotEmpty()) {
                 item {
-                    FilaCategoria("Todos", conteos.values.sum(), seleccionada == null) {
-                        onCategory(null)
-                    }
-                }
-                if (favoritos.isNotEmpty()) {
-                    item {
-                        FilaCategoria("Favoritos", favoritos.size, seleccionada == CAT_FAVORITOS) {
-                            onCategory(CAT_FAVORITOS)
-                        }
-                    }
-                }
-                items(categories) { c ->
-                    FilaCategoria(c.name, conteos[c.id] ?: 0, seleccionada == c.id) {
-                        onCategory(c.id)
+                    FilaCategoria("Favoritos", favoritos.size, seleccionada == CAT_FAVORITOS) {
+                        onCategory(CAT_FAVORITOS)
                     }
                 }
             }
-            Spacer(Modifier.height(skin.gap.dp))
-            FocusRow(onClick = onDiagnostics, modifier = Modifier.fillMaxWidth()) {
-                TextoQueCabe(
-                    listOf("Diagnóstico de red", "Diagnóstico", "Red"),
-                    color = Tint.text,
-                    fontSize = 15.sp,
-                )
-            }
-            FocusRow(onClick = onSettings, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    "Ajustes",
-                    color = Tint.text,
-                    fontSize = 15.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            items(categories) { c ->
+                FilaCategoria(c.name, conteos[c.id] ?: 0, seleccionada == c.id) {
+                    onCategory(c.id)
+                }
             }
         }
 
@@ -746,19 +704,6 @@ private fun FilaCanal(
                 Text("EN VENTANA", color = Tint.accent, fontSize = 11.sp, maxLines = 1, softWrap = false)
             }
         }
-    }
-}
-
-@Composable
-private fun Chip(texto: String, activa: Boolean, onClick: () -> Unit) {
-    FocusRow(onClick = onClick) {
-        Text(
-            texto,
-            color = if (activa) Tint.accent else Tint.text,
-            fontSize = 14.sp,
-            fontWeight = if (activa) FontWeight.SemiBold else FontWeight.Normal,
-            maxLines = 1,
-        )
     }
 }
 

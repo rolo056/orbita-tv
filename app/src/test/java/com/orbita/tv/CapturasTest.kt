@@ -4,27 +4,45 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.orbita.tv.data.Account
 import com.orbita.tv.data.AppSettings
+import com.orbita.tv.data.Avance
+import com.orbita.tv.data.Biblioteca
+import com.orbita.tv.data.PuntoDeSerie
 import com.orbita.tv.data.Skin
 import com.orbita.tv.diag.DiagReport
 import com.orbita.tv.diag.Finding
 import com.orbita.tv.diag.Level
 import com.orbita.tv.net.Category
 import com.orbita.tv.net.Channel
+import com.orbita.tv.net.Episode
+import com.orbita.tv.net.Movie
+import com.orbita.tv.net.MovieInfo
+import com.orbita.tv.net.Season
+import com.orbita.tv.net.Series
+import com.orbita.tv.net.SeriesDetail
+import com.orbita.tv.player.CineStats
 import com.orbita.tv.player.PlaybackStats
+import com.orbita.tv.ui.CAT_SEGUIR
+import com.orbita.tv.ui.CatalogoScreen
+import com.orbita.tv.ui.CineCapas
 import com.orbita.tv.ui.DiagnosticsScreen
+import com.orbita.tv.ui.FichaPeliculaScreen
+import com.orbita.tv.ui.FichaSerieScreen
 import com.orbita.tv.ui.HomeScreen
 import com.orbita.tv.ui.LoginScreen
 import com.orbita.tv.ui.OrbitaTheme
 import com.orbita.tv.ui.Seccion
 import com.orbita.tv.ui.SettingsScreen
+import com.orbita.tv.ui.Tarjeta
 import com.orbita.tv.ui.Tint
 import org.junit.After
 import org.junit.Before
@@ -272,6 +290,237 @@ class CapturasTest {
         )
     }
 
+    // --------------------------------------------------- peliculas y series
+
+    private val todas = listOf(Seccion.EN_VIVO, Seccion.PELICULAS, Seccion.SERIES)
+
+    private val generos = listOf(
+        Category("20", "ESTRENOS"),
+        Category("21", "ACCIÓN Y AVENTURA"),
+        Category("22", "COMEDIA"),
+        Category("23", "DRAMA"),
+        Category("24", "TERROR"),
+        Category("25", "ANIMACIÓN E INFANTIL"),
+        Category("26", "DOCUMENTALES"),
+        Category("27", "CLÁSICOS"),
+    )
+
+    private val titulos = listOf(
+        "La casa del acantilado", "Ruta al sur", "Tres veranos", "El último tren",
+        "Noche de estreno", "Cuenta regresiva", "Un título bastante largo para ver cómo se corta en la tarjeta",
+        "Mar adentro", "La visita", "Vecinos", "El mapa", "Ciudad dormida", "Domingo", "Fuera de hora",
+    )
+
+    private val tarjetas = titulos.mapIndexed { i, t ->
+        Tarjeta(
+            id = 5000 + i,
+            titulo = t,
+            imagen = null,
+            detalle = (2010 + i).toString() + "  ·  ★ " + (6 + i % 3) + "," + (i % 10),
+            avance = if (i == 1) 0.35f else null,
+            favorita = i == 2,
+        )
+    }
+
+    @Composable
+    private fun Catalogo(
+        seccion: Seccion = Seccion.PELICULAS,
+        abierta: String? = "20",
+        lista: List<Tarjeta> = tarjetas,
+        cargando: Boolean = false,
+        error: String? = null,
+    ) {
+        CatalogoScreen(
+            seccion = seccion,
+            secciones = todas,
+            onSeccion = {},
+            categorias = generos,
+            abierta = abierta,
+            haySeguir = true,
+            hayFavoritas = true,
+            tarjetas = lista,
+            cargando = cargando,
+            error = error,
+            estadoGrilla = rememberLazyGridState(),
+            enfocar = null,
+            onCategoria = {},
+            onAbrir = {},
+            onFavorita = {},
+            onDiagnostics = {},
+            onSettings = {},
+        )
+    }
+
+    private val pelicula = Movie(5001, "Ruta al sur", null, "20", "mkv", 7.4f, "2019")
+
+    private val fichaDePelicula = MovieInfo(
+        plot = "Dos hermanos que no se hablan desde hace años tienen que cruzar el país en una " +
+            "camioneta prestada para llegar a tiempo a la venta de la casa familiar. En el camino " +
+            "aparece lo que ninguno quería discutir, y una avería a mitad de la nada los obliga a " +
+            "pasar tres días en un pueblo donde nadie tiene apuro.",
+        genre = "Drama, Comedia",
+        cast = "Ana Uno, Luis Dos, Eva Tres, Juan Cuatro",
+        director = "Marta Cinco",
+        released = "2019-03-08",
+        durationSecs = 6130,
+        rating = 7.4f,
+        backdrop = null,
+        poster = null,
+        extension = "mkv",
+    )
+
+    private val serie = Series(
+        77, "Los vecinos", null, "22",
+        "Un edificio de seis pisos, un ascensor que no anda y una administradora que renuncia " +
+            "cada lunes. Los vecinos del tercero quieren cambiar todo; los del quinto, que nada cambie.",
+        "Comedia", "Ana Uno, Luis Dos", "2015-04-02", 8.1f, null,
+    )
+
+    private val detalleDeSerie = SeriesDetail(
+        serie,
+        listOf(
+            Season(1, (1..9).map { n ->
+                Episode(9000 + n, 1, n, listOf("Piloto", "La mudanza", "El ascensor", "Reunión de consorcio",
+                    "La gotera", "Un título de episodio bastante largo para ver cómo se corta en la fila",
+                    "Vacaciones", "El plomero", "Final de temporada")[n - 1], "mp4", 1320 + n * 15, null, null)
+            }),
+            Season(2, (1..6).map { n -> Episode(9100 + n, 2, n, "Episodio $n", "mp4", 1380, null, null) }),
+        ),
+    )
+
+    private val bibliotecaDeSerie = Biblioteca()
+        .conAvance(Biblioteca.claveEpisodio(9001), 1335_000L, 1335_000L, 1)
+        .conAvance(Biblioteca.claveEpisodio(9002), 1350_000L, 1350_000L, 2)
+        .conAvance(Biblioteca.claveEpisodio(9003), 540_000L, 1365_000L, 3)
+        .conPunto(77, PuntoDeSerie(9003, 1, 3))
+
+    @Test
+    fun tv_peliculas() = capturar("tv-11-peliculas") { Catalogo() }
+
+    @Test
+    fun tv_peliculas_texto_grande() {
+        aplicarTema("""{"escalaTexto":1.3}""", conArchivo = true)
+        capturar("tv-12-peliculas-texto-grande") { Catalogo() }
+    }
+
+    @Test
+    fun tv_series_cargando_y_vacia() = capturar("tv-13-series-seguir-vacio") {
+        Catalogo(seccion = Seccion.SERIES, abierta = CAT_SEGUIR, lista = emptyList())
+    }
+
+    @Test
+    fun tv_ficha_pelicula() = capturar("tv-14-ficha-pelicula") {
+        FichaPeliculaScreen(
+            pelicula = pelicula,
+            info = fichaDePelicula,
+            cargandoInfo = false,
+            avance = Avance(23 * 60_000L + 10_000L, 6130_000L, 0),
+            favorita = true,
+            onReproducir = {},
+            onFavorita = {},
+            onSalir = {},
+        )
+    }
+
+    @Test
+    fun tv_ficha_pelicula_sin_datos() = capturar("tv-15-ficha-pelicula-sin-datos") {
+        FichaPeliculaScreen(
+            pelicula = pelicula.copy(name = "Un título de película bastante largo para ver cómo queda en dos líneas", year = null, rating = null),
+            info = null,
+            cargandoInfo = false,
+            avance = null,
+            favorita = false,
+            onReproducir = {},
+            onFavorita = {},
+            onSalir = {},
+        )
+    }
+
+    @Test
+    fun tv_ficha_serie() = capturar("tv-16-ficha-serie") {
+        FichaSerieScreen(
+            serie = serie,
+            detalle = detalleDeSerie,
+            cargando = false,
+            error = null,
+            biblioteca = bibliotecaDeSerie,
+            favorita = false,
+            onEpisodio = { _, _ -> },
+            onFavorita = {},
+            onReintentar = {},
+            onSalir = {},
+        )
+    }
+
+    @Test
+    fun tv_ficha_serie_con_error() = capturar("tv-17-ficha-serie-error") {
+        FichaSerieScreen(
+            serie = serie,
+            detalle = null,
+            cargando = false,
+            error = "No se pudo abrir la conexion con el servidor. El panel puede estar perfecto " +
+                "y aun asi fallar si ESTA red no deja salir por su puerto.",
+            biblioteca = Biblioteca(),
+            favorita = true,
+            onEpisodio = { _, _ -> },
+            onFavorita = {},
+            onReintentar = {},
+            onSalir = {},
+        )
+    }
+
+    @Composable
+    private fun Cine(stats: CineStats, objetivo: Long? = null, cuenta: Int = -1, esTv: Boolean = true) {
+        Box(Modifier.fillMaxSize().background(Color(0xFF14202B))) {
+            CineCapas(
+                titulo = "Los vecinos",
+                subtitulo = "Temporada 1  ·  Episodio 3  ·  El ascensor",
+                stats = stats,
+                objetivo = objetivo,
+                visibles = true,
+                esTv = esTv,
+                cuenta = cuenta,
+                onBarra = {},
+                botones = {},
+            )
+        }
+    }
+
+    private val enCurso = CineStats(
+        estado = "Reproduciendo", posMs = 540_000L, durMs = 1365_000L, bufferMs = 28_000L,
+        reproduciendo = true, cargando = false, audios = 2, audio = "Español", subtitulos = 1,
+    )
+
+    @Test
+    fun tv_cine_en_curso() = capturar("tv-18-cine-en-curso") { Cine(enCurso) }
+
+    @Test
+    fun tv_cine_saltando_en_pausa() = capturar("tv-19-cine-salto-y-aviso") {
+        Cine(
+            enCurso.copy(
+                estado = "En pausa", reproduciendo = false, enPausa = true,
+                aviso = "Este aparato no puede decodificar el sonido de este video " +
+                    "(Dolby Digital Plus, E-AC-3). Se ve pero no se oye.",
+            ),
+            objetivo = 900_000L,
+        )
+    }
+
+    @Test
+    fun tv_cine_error() = capturar("tv-20-cine-error") {
+        Cine(
+            enCurso.copy(
+                error = "El servidor dejó de mandar datos y no volvió después de varios intentos. " +
+                    "Pulsa OK para reintentar: sigue desde donde estaba.",
+            ),
+        )
+    }
+
+    @Test
+    fun tv_cine_siguiente() = capturar("tv-21-cine-siguiente") {
+        Cine(enCurso.copy(estado = "Terminado", terminado = true, reproduciendo = false, posMs = 1365_000L), cuenta = 6)
+    }
+
     // ------------------------------------------------------------- telefono
 
     @Test
@@ -295,5 +544,57 @@ class CapturasTest {
         capturar("tel-03-inicio-con-secciones") {
             Inicio(secciones = listOf(Seccion.EN_VIVO, Seccion.PELICULAS, Seccion.SERIES))
         }
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = TELEFONO_VERTICAL)
+    fun telefono_vertical_peliculas() {
+        conDedo()
+        capturar("tel-04-peliculas") { Catalogo() }
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = TELEFONO_VERTICAL)
+    fun telefono_vertical_ficha_pelicula() {
+        conDedo()
+        capturar("tel-05-ficha-pelicula") {
+            FichaPeliculaScreen(
+                pelicula = pelicula,
+                info = fichaDePelicula,
+                cargandoInfo = false,
+                avance = null,
+                favorita = false,
+                onReproducir = {},
+                onFavorita = {},
+                onSalir = {},
+            )
+        }
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = TELEFONO_VERTICAL)
+    fun telefono_vertical_ficha_serie() {
+        conDedo()
+        capturar("tel-06-ficha-serie") {
+            FichaSerieScreen(
+                serie = serie,
+                detalle = detalleDeSerie,
+                cargando = false,
+                error = null,
+                biblioteca = bibliotecaDeSerie,
+                favorita = false,
+                onEpisodio = { _, _ -> },
+                onFavorita = {},
+                onReintentar = {},
+                onSalir = {},
+            )
+        }
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = TELEFONO_HORIZONTAL)
+    fun telefono_horizontal_cine() {
+        conDedo()
+        capturar("tel-07-cine") { Cine(enCurso, esTv = false) }
     }
 }

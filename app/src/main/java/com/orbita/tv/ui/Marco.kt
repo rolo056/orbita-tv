@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -140,6 +143,109 @@ fun Pestanas(
     }
 }
 
+/**
+ * La barra de la izquierda: la marca, las categorias y, abajo, el diagnostico y
+ * los ajustes. Es la misma en canales, peliculas y series: quien la usa solo
+ * pone las filas.
+ */
+@Composable
+fun BarraLateral(
+    ancho: Dp,
+    onDiagnostics: () -> Unit,
+    onSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+    arriba: @Composable () -> Unit = {},
+    categorias: LazyListScope.() -> Unit,
+) {
+    val skin = Tint.skin
+    Column(
+        modifier.width(ancho).fillMaxHeight(),
+        verticalArrangement = Arrangement.spacedBy(skin.gap.dp),
+    ) {
+        BrandMark(size = 22.sp)
+        Spacer(Modifier.height(6.dp))
+        SectionTitle("CATEGORÍAS", maxLines = 1)
+        arriba()
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(skin.gap.dp * 0.6f),
+            modifier = Modifier.weight(1f),
+            content = categorias,
+        )
+        Spacer(Modifier.height(skin.gap.dp))
+        FocusRow(onClick = onDiagnostics, modifier = Modifier.fillMaxWidth()) {
+            TextoQueCabe(
+                listOf("Diagnóstico de red", "Diagnóstico", "Red"),
+                color = Tint.text,
+                fontSize = 15.sp,
+            )
+        }
+        FocusRow(onClick = onSettings, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                "Ajustes",
+                color = Tint.text,
+                fontSize = 15.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+/**
+ * Lo de arriba en una pantalla angosta (un telefono parado): la marca, la hora,
+ * los dos botones y, si hay mas de una, las secciones.
+ */
+@Composable
+fun CabeceraCompacta(
+    hora: String,
+    seccion: Seccion,
+    secciones: List<Seccion>,
+    onSeccion: (Seccion) -> Unit,
+    onDiagnostics: () -> Unit,
+    onSettings: () -> Unit,
+) {
+    val skin = Tint.skin
+    Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        BrandMark(size = 18.sp)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(hora, color = Tint.textSoft, fontSize = 14.sp, maxLines = 1, softWrap = false)
+            FocusRow(onClick = onDiagnostics) {
+                Text("Red", color = Tint.text, fontSize = 14.sp, maxLines = 1, softWrap = false)
+            }
+            FocusRow(onClick = onSettings) {
+                Text("Ajustes", color = Tint.text, fontSize = 14.sp, maxLines = 1, softWrap = false)
+            }
+        }
+    }
+    Spacer(Modifier.height(skin.gap.dp))
+    if (secciones.size > 1) {
+        Pestanas(seccion, secciones, onSeccion)
+        Spacer(Modifier.height(skin.gap.dp))
+    }
+}
+
+/** Una categoria en la fila de arriba de la pantalla angosta. */
+@Composable
+fun Chip(texto: String, activa: Boolean, onClick: () -> Unit) {
+    FocusRow(onClick = onClick) {
+        Text(
+            texto,
+            color = if (activa) Tint.accent else Tint.text,
+            fontSize = 14.sp,
+            fontWeight = if (activa) FontWeight.SemiBold else FontWeight.Normal,
+            maxLines = 1,
+            softWrap = false,
+        )
+    }
+}
+
 @Composable
 fun FilaCategoria(
     nombre: String,
@@ -248,6 +354,30 @@ private fun Tecla(tecla: String, que: String) {
         )
         Spacer(Modifier.width(7.dp))
         Text(que, color = Tint.textSoft, fontSize = 12.sp, maxLines = 1, softWrap = false)
+    }
+}
+
+/** 1:42:10 o 23:10. Para la barra de una pelicula. */
+fun reloj(ms: Long): String {
+    val total = (ms / 1000).coerceAtLeast(0)
+    val h = total / 3600
+    val m = (total % 3600) / 60
+    val s = total % 60
+    val mm = m.toString().padStart(2, '0')
+    val ss = s.toString().padStart(2, '0')
+    return if (h > 0) "$h:$mm:$ss" else "$m:$ss"
+}
+
+/** "1 h 42 min" o "42 min". Vacio si no se sabe. */
+fun duracion(segundos: Int): String {
+    if (segundos <= 0) return ""
+    val minutos = (segundos + 30) / 60
+    val h = minutos / 60
+    val m = minutos % 60
+    return when {
+        h > 0 && m > 0 -> "$h h $m min"
+        h > 0 -> "$h h"
+        else -> "$m min"
     }
 }
 

@@ -254,8 +254,12 @@ object XtreamJson {
         }
 
         val porTemporada = java.util.TreeMap<Int, ArrayList<Episode>>()
+        // El mismo episodio listado dos veces (mismo id) se cuenta una: la
+        // pantalla usa el id como clave de cada fila y una repetida la cierra.
+        val vistos = HashSet<Int>()
         fun sumar(o: JSONObject, temporadaDeLaClave: Int?) {
             val e = episodio(o, temporadaDeLaClave) ?: return
+            if (!vistos.add(e.id)) return
             porTemporada.getOrPut(e.season) { ArrayList() }.add(e)
         }
         fun sumarGrupo(grupo: Any?, temporadaDeLaClave: Int?) {
