@@ -1,0 +1,4 @@
+# Estos archivos corren en Linux: con finales de linea de Windows no arrancan.
+*.sh         text eol=lf
+*.py         text eol=lf
+*.plantilla  text eol=lf

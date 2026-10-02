@@ -1,0 +1,95 @@
+# Puente IPTV. Archivo generado por crear-puente.sh a partir de la plantilla:
+# no editarlo a mano, volver a correr el script.
+#
+# Proveedor real: @@ESQ@@://@@RHOST@@:@@RPORT@@
+#
+# El aparato habla con este puente como si fuera el proveedor, y el puente
+# pide todo al proveedor desde la IP del servidor donde corre.
+
+# Nombre y puerto con los que el aparato llego al puente. Sirven para que las
+# respuestas del proveedor apunten de vuelta al puente y no a su direccion real.
+map $http_host $puente_nombre {
+    "~^(?<pn>[^:]+)"    $pn;
+    default             $host;
+}
+map $http_host $puente_puerto {
+    "~:(?<pp>[0-9]+)$"  $pp;
+    default             80;
+}
+
+# En el registro no se guardan usuario ni clave. En las listas Xtream viajan
+# dentro de la ruta (/live/USUARIO/CLAVE/...) y de los parametros.
+map $request_uri $ruta_sin_claves {
+    "~^/(?<rt>live|movie|series|hls|timeshift)/[^/?]+/[^/?]+/(?<rr>[^?]*)"  "/$rt/*/*/$rr";
+    "~^(?<ra>/[^?]*)\?.*action=(?<rb>[a-z_]+)"                              "$ra?action=$rb";
+    "~^(?<rq>/[^?]*)\?"                                                      "$rq?(parametros)";
+    default                                                                  $request_uri;
+}
+log_format puente '$remote_addr [$time_local] $status $body_bytes_sent ${request_time}s '
+                  '"$request_method $ruta_sin_claves" "$http_user_agent"';
+
+server {
+    listen 80;
+    access_log /var/log/nginx/access.log puente;
+
+    # Si el proveedor se indica por nombre, se vuelve a resolver cada 5 minutos.
+    # Muchos cambian de IP sin avisar, y sin esto habria que reiniciar el puente.
+    resolver 1.1.1.1 8.8.8.8 valid=300s ipv6=off;
+    set $proveedor "@@RHOST@@:@@RPORT@@";
+
+    proxy_http_version 1.1;
+    proxy_set_header Host "@@HOSTHDR@@";
+    proxy_set_header Connection "";
+    # Sin compresion desde el proveedor: hace falta para poder reescribir sus
+    # respuestas. Hacia el aparato se vuelve a comprimir mas abajo.
+    proxy_set_header Accept-Encoding "";
+    proxy_ssl_server_name on;
+    proxy_ssl_name @@RHOST@@;
+
+    # Video en vivo y peliculas enteras: sin bufer intermedio y sin cortes por
+    # tiempo. Los pedidos parciales (adelantar una pelicula) pasan tal cual.
+    proxy_buffering off;
+    proxy_request_buffering off;
+    proxy_connect_timeout 15s;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+
+    # Si el proveedor redirige a su propia direccion, el aparato tiene que
+    # seguir hablando con el puente, no saltarselo.
+    proxy_redirect @@ESQ@@://@@RHOST@@:@@RPORT@@/ $scheme://$http_host/;
+    proxy_redirect http://@@RHOST@@/ $scheme://$http_host/;
+    proxy_redirect https://@@RHOST@@/ $scheme://$http_host/;
+
+    # El proveedor anuncia su direccion real dentro de sus respuestas: en la
+    # ficha de la cuenta ("url" y "port"), en las listas M3U y a veces en las
+    # listas de segmentos. Hay apps que arman las direcciones del video con ese
+    # dato y no con el servidor que escribio el usuario; sin esta reescritura
+    # se irian directo al proveedor y el puente no serviria de nada.
+    sub_filter_once off;
+    sub_filter_types application/json application/x-mpegurl application/vnd.apple.mpegurl
+                     audio/x-mpegurl audio/mpegurl text/plain;
+    sub_filter '@@RHOST@@:@@RPORT@@'   '$http_host';
+    sub_filter '"url":"@@RHOST@@"'     '"url":"$puente_nombre"';
+    sub_filter '"port":"@@RPORT@@"'    '"port":"$puente_puerto"';
+
+    # Los catalogos de peliculas y series pueden pesar varios megas.
+    gzip on;
+    gzip_proxied any;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_types application/json application/x-mpegurl application/vnd.apple.mpegurl text/plain;
+
+    location / {
+        proxy_pass @@ESQ@@://$proveedor;
+    }
+
+    # La lista M3U se entrega como descarga, con un tipo generico. Aqui se
+    # reescribe siempre, porque este punto solo devuelve listas. No se hace en
+    # general: un tipo generico tambien lo usan los archivos de video, y
+    # reescribirlos les quitaria el tamano y romperia el adelantar.
+    location = /get.php {
+        proxy_pass @@ESQ@@://$proveedor;
+        sub_filter_types *;
+        gzip_types *;
+    }
+}
