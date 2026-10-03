@@ -95,6 +95,12 @@ jobs:
             grep -nE "^e: |error:|FAILED|Caused by" compilacion.txt 2>/dev/null | head -80 || true
           } > salida/informe.txt
           rm -f salida/ui.xml
+          # Con el fondo de resplandores cada foto pesaba mas de un mega en PNG,
+          # y subir treinta fallaba. En JPG pesan una decima parte y se ven igual.
+          for f in salida/*.png; do
+            [ -f "$f" ] || continue
+            ffmpeg -hide_banner -loglevel error -y -i "$f" -q:v 3 "${f%.png}.jpg" && rm -f "$f"
+          done
           ls salida > salida/indice.txt
           cat salida/informe.txt | head -150
 
