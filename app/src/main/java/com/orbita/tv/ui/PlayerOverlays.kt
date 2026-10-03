@@ -127,9 +127,10 @@ fun BoxScope.PlayerInfoBar(stats: PlaybackStats, esTv: Boolean) {
 }
 
 /**
- * El detalle tecnico existe para una sola pregunta: cuando se corta, ¿es la red
- * o es el panel? El bufer y el contador de reconexiones lo responden sin
- * adivinar.
+ * El detalle tecnico existe para dos preguntas. Cuando se corta, ¿es la red o
+ * es el panel? El bufer y el contador de reconexiones lo responden sin adivinar.
+ * Y cuando se oye bien pero se ve con bloques, ¿es la señal o es el aparato? La
+ * imagen dice el formato y si el decodificador del aparato declara poder con el.
  */
 @Composable
 fun BoxScope.PlayerHud(stats: PlaybackStats) {
@@ -149,6 +150,10 @@ fun BoxScope.PlayerHud(stats: PlaybackStats) {
         HudLine("Caudal", stats.kbps.toString() + " kbps")
         HudLine("Reconexiones", stats.reconnects.toString())
         HudLine("Estable desde", stats.healthySeconds.toString() + " s")
+        HudLine("Cuadros perdidos", stats.cuadrosPerdidos.toString())
+        Spacer(Modifier.height(4.dp))
+        HudBloque("Imagen", stats.imagen.ifEmpty { "—" })
+        HudBloque("Decodificador", stats.decodificador.ifEmpty { "—" })
         Spacer(Modifier.height(4.dp))
         Text(
             stats.variantUrl,
@@ -165,6 +170,22 @@ private fun HudLine(label: String, value: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, color = Tint.textSoft, fontSize = 13.sp)
         Text(value, color = Tint.text, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+/** Un dato largo: el nombre arriba y el valor debajo, en hasta dos lineas. */
+@Composable
+private fun HudBloque(label: String, value: String) {
+    Column(Modifier.fillMaxWidth()) {
+        Text(label, color = Tint.textSoft, fontSize = 13.sp)
+        Text(
+            value,
+            color = Tint.text,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

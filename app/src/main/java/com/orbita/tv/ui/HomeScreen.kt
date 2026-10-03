@@ -155,6 +155,17 @@ fun HomeScreen(
 
     LaunchedEffect(selectedCategory) { estadoLista.scrollToItem(0) }
 
+    // Elegir una categoria con OK lleva al primer canal de esa categoria. Antes
+    // el foco se quedaba en la categoria, y la flecha derecha caia en el canal
+    // que estuviera a su misma altura, no en el primero.
+    var pedidoDeFoco by remember { mutableStateOf(0) }
+    LaunchedEffect(pedidoDeFoco) {
+        if (pedidoDeFoco == 0 || !esTv || visibles.isEmpty()) return@LaunchedEffect
+        estadoLista.scrollToItem(0)
+        withFrameNanos { }
+        runCatching { focoPrimero.requestFocus() }
+    }
+
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val compacto = maxWidth < 600.dp
         val conPrevia = esTv && !compacto
@@ -284,7 +295,11 @@ fun HomeScreen(
             loading = loading, error = error, enVentana = enVentana, stats = stats,
             estadoLista = estadoLista, focoCanal = focoCanal, focoPrimero = focoPrimero,
             notice = notice,
-            onCategory = onCategory, onAbrir = { abrir(it) },
+            onCategory = {
+                onCategory(it)
+                pedidoDeFoco++
+            },
+            onAbrir = { abrir(it) },
             onFavorito = onToggleFavorite,
         )
 

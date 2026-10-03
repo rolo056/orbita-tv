@@ -45,6 +45,7 @@ import com.orbita.tv.ui.FichaSerieScreen
 import com.orbita.tv.ui.HomeScreen
 import com.orbita.tv.ui.LoginScreen
 import com.orbita.tv.ui.OrbitaTheme
+import com.orbita.tv.ui.PlayerHud
 import com.orbita.tv.ui.Seccion
 import com.orbita.tv.ui.SettingsScreen
 import com.orbita.tv.ui.Tarjeta
@@ -244,6 +245,27 @@ class CapturasTest {
 
     @Test
     fun tv_cuenta() = capturar("tv-23-cuenta") { Cuenta() }
+
+    /** El detalle tecnico de un canal que se oye bien y se ve con bloques verdes. */
+    @Test
+    fun tv_detalle_tecnico() = capturar("tv-24-detalle-tecnico") {
+        Box(Modifier.fillMaxSize()) {
+            PlayerHud(
+                PlaybackStats(
+                    channelName = "Canal Uno HD",
+                    variantLabel = "TS",
+                    variantUrl = "http://203.0.113.10:25461/live/usuario/clave/1.ts",
+                    status = "Reproduciendo",
+                    bufferedSeconds = 21,
+                    kbps = 6400,
+                    healthySeconds = 95,
+                    imagen = "H.264 High 4:2:2 · 1920x1080 · 25 fps · EL APARATO NO PUEDE",
+                    decodificador = "OMX.amlogic.avc.decoder.awesome2",
+                    cuadrosPerdidos = 3,
+                )
+            )
+        }
+    }
 
     // ------------------------------------------------------------ televisor
 
