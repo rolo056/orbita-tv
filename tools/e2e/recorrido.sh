@@ -218,9 +218,11 @@ teclas 3 $ATRAS
 foto catalogo-de-vuelta
 foco
 
-paso "15b. Izquierda a las categorias, abajo y OK: el foco va a la primera portada de esa categoria"
+paso "15b. Izquierda a las categorias, arriba hasta Seguir viendo y OK: el foco va a su primera portada"
+# Arriba del todo esta "Seguir viendo", que ya tiene la pelicula de los pasos
+# 10 a 14: una categoria con algo adentro (la de mas abajo es la vacia).
 teclas 2 $IZQ
-teclas 2 $ABAJO
+teclas 2 $ARRIBA $ARRIBA $ARRIBA $ARRIBA $ARRIBA
 foco
 teclas 8 $OK
 foto otra-categoria
