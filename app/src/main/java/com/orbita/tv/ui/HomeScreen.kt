@@ -62,7 +62,6 @@ import coil.compose.AsyncImage
 import com.orbita.tv.data.Skin
 import com.orbita.tv.net.Category
 import com.orbita.tv.net.Channel
-import com.orbita.tv.net.UpdateInfo
 import com.orbita.tv.player.PlaybackStats
 import com.orbita.tv.player.ResilientPlayer
 
@@ -119,11 +118,6 @@ fun HomeScreen(
     onPlay: (Channel) -> Unit,
     onStop: () -> Unit,
     onToggleFavorite: (Channel) -> Unit,
-    onDiagnostics: () -> Unit,
-    onSettings: () -> Unit,
-    update: UpdateInfo?,
-    updating: Boolean,
-    onUpdate: () -> Unit,
     notice: String? = null,
     seccion: Seccion = Seccion.EN_VIVO,
     secciones: List<Seccion> = listOf(Seccion.EN_VIVO),
@@ -289,11 +283,9 @@ fun HomeScreen(
             seleccionada = selectedCategory, visibles = visibles,
             loading = loading, error = error, enVentana = enVentana, stats = stats,
             estadoLista = estadoLista, focoCanal = focoCanal, focoPrimero = focoPrimero,
-            update = update, updating = updating, onUpdate = onUpdate,
             notice = notice,
             onCategory = onCategory, onAbrir = { abrir(it) },
             onFavorito = onToggleFavorite,
-            onDiagnostics = onDiagnostics, onSettings = onSettings,
         )
 
         // ------------------------------------------------------------------
@@ -474,15 +466,10 @@ private fun Contenido(
     estadoLista: LazyListState,
     focoCanal: FocusRequester,
     focoPrimero: FocusRequester,
-    update: UpdateInfo?,
-    updating: Boolean,
-    onUpdate: () -> Unit,
     notice: String?,
     onCategory: (String?) -> Unit,
     onAbrir: (Channel) -> Unit,
     onFavorito: (Channel) -> Unit,
-    onDiagnostics: () -> Unit,
-    onSettings: () -> Unit,
 ) {
     val nombreCat = when (seleccionada) {
         null -> "Todos los canales"
@@ -492,8 +479,7 @@ private fun Contenido(
 
     if (compacto) {
         Column(Modifier.fillMaxSize().padding(pad)) {
-            CabeceraCompacta(hora, seccion, secciones, onSeccion, onDiagnostics, onSettings)
-            BannerActualizacion(update, updating, onUpdate)
+            CabeceraCompacta(hora, seccion, secciones, onSeccion)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item { Chip("Todos", seleccionada == null) { onCategory(null) } }
                 if (favoritos.isNotEmpty()) {
@@ -519,12 +505,7 @@ private fun Contenido(
 
     Row(Modifier.fillMaxSize().padding(pad)) {
         // ---- categorias ----
-        BarraLateral(
-            ancho = lateral,
-            onDiagnostics = onDiagnostics,
-            onSettings = onSettings,
-            arriba = { BannerActualizacion(update, updating, onUpdate) },
-        ) {
+        BarraLateral(ancho = lateral) {
             item {
                 FilaCategoria("Todos", conteos.values.sum(), seleccionada == null) {
                     onCategory(null)
@@ -751,21 +732,4 @@ private fun Aviso(texto: String?) {
         Text(texto, color = Tint.accent, fontSize = 14.sp)
     }
     Spacer(Modifier.height(10.dp))
-}
-
-@Composable
-private fun BannerActualizacion(update: UpdateInfo?, updating: Boolean, onUpdate: () -> Unit) {
-    if (update == null) return
-    FocusRow(onClick = onUpdate, modifier = Modifier.fillMaxWidth()) {
-        Column {
-            Text(
-                if (updating) "Descargando…" else "Actualizar a la " + update.versionName,
-                color = Tint.accent,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-            )
-            Hint(if (updating) "No cierres la app" else "Toca o pulsa OK para instalar")
-        }
-    }
-    Spacer(Modifier.height(4.dp))
 }

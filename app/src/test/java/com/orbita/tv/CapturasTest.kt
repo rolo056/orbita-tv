@@ -186,11 +186,6 @@ class CapturasTest {
             onPlay = {},
             onStop = {},
             onToggleFavorite = {},
-            onDiagnostics = {},
-            onSettings = {},
-            update = null,
-            updating = false,
-            onUpdate = {},
             notice = aviso,
             secciones = secciones,
         )
@@ -224,7 +219,7 @@ class CapturasTest {
 
     @Test
     fun tv_menu_con_actualizacion() = capturar("tv-00b-menu-con-actualizacion") {
-        Menu(UpdateInfo(28, "1.0.28", "", ""))
+        Menu(UpdateInfo(29, "1.0.29", "", ""))
     }
 
     @Test
@@ -233,8 +228,8 @@ class CapturasTest {
         capturar("tv-00c-menu-texto-grande") { Menu() }
     }
 
-    @Test
-    fun tv_cuenta() = capturar("tv-23-cuenta") {
+    @Composable
+    private fun Cuenta() {
         CuentaScreen(
             usuario = "Alex",
             servidor = "203.0.113.10:25461",
@@ -246,6 +241,9 @@ class CapturasTest {
             onSalir = {},
         )
     }
+
+    @Test
+    fun tv_cuenta() = capturar("tv-23-cuenta") { Cuenta() }
 
     // ------------------------------------------------------------ televisor
 
@@ -405,8 +403,6 @@ class CapturasTest {
             onCategoria = {},
             onAbrir = {},
             onFavorita = {},
-            onDiagnostics = {},
-            onSettings = {},
         )
     }
 
@@ -610,6 +606,13 @@ class CapturasTest {
     fun telefono_vertical_menu() {
         conDedo()
         capturar("tel-00-menu") { Menu() }
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = TELEFONO_VERTICAL)
+    fun telefono_vertical_cuenta() {
+        conDedo()
+        capturar("tel-08-cuenta") { Cuenta() }
     }
 
     @Test

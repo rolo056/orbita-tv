@@ -91,8 +91,6 @@ fun CatalogoScreen(
     onCategoria: (String) -> Unit,
     onAbrir: (Tarjeta) -> Unit,
     onFavorita: (Tarjeta) -> Unit,
-    onDiagnostics: () -> Unit,
-    onSettings: () -> Unit,
 ) {
     val skin = Tint.skin
     val esTv = isTvDevice()
@@ -133,7 +131,7 @@ fun CatalogoScreen(
 
         if (compacto) {
             Column(Modifier.fillMaxSize().padding(pad)) {
-                CabeceraCompacta(hora, seccion, secciones, onSeccion, onDiagnostics, onSettings)
+                CabeceraCompacta(hora, seccion, secciones, onSeccion)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (haySeguir) item { Chip("Seguir viendo", abierta == CAT_SEGUIR) { onCategoria(CAT_SEGUIR) } }
                     if (hayFavoritas) item { Chip("Favoritas", abierta == CAT_FAVORITOS) { onCategoria(CAT_FAVORITOS) } }
@@ -151,7 +149,7 @@ fun CatalogoScreen(
         val disponible: Dp = maxWidth - pad * 3
         val lateral: Dp = minOf(skin.sidebarWidth.dp, disponible * 0.30f)
         Row(Modifier.fillMaxSize().padding(pad)) {
-            BarraLateral(ancho = lateral, onDiagnostics = onDiagnostics, onSettings = onSettings) {
+            BarraLateral(ancho = lateral) {
                 if (haySeguir) {
                     item { FilaCategoria("Seguir viendo", null, abierta == CAT_SEGUIR) { onCategoria(CAT_SEGUIR) } }
                 }

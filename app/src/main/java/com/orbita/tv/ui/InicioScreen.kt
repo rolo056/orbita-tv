@@ -26,9 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -45,7 +48,11 @@ import java.util.Locale
  * en una baldosa grande, peliculas y series al lado, y debajo los botones chicos
  * de cuenta, diagnostico y ajustes. Arriba la hora y la fecha; abajo hasta
  * cuando dura la cuenta, cuantos aparatos pueden ver a la vez y con que usuario
- * se entro. Todo de cristal sobre el fondo con resplandores.
+ * se entro, y al pie la firma de quien la diseño. Todo de cristal sobre el
+ * fondo con resplandores.
+ *
+ * Es la unica pantalla con el diagnostico, los ajustes y el aviso de version
+ * nueva: las secciones (canales, peliculas, series) muestran solo lo suyo.
  */
 @Composable
 fun InicioScreen(
@@ -127,6 +134,8 @@ fun InicioScreen(
                 Dato("Vence", vence ?: "—")
                 if (conexiones != null) Dato("Conexiones", conexiones)
                 Dato("Usuario", usuario)
+                Spacer(Modifier.height(4.dp))
+                Firma(Modifier.align(Alignment.CenterHorizontally))
             }
             return@BoxWithConstraints
         }
@@ -204,8 +213,29 @@ fun InicioScreen(
                 }
                 Dato("Usuario", usuario)
             }
+
+            Spacer(Modifier.height(14.dp))
+            Firma(Modifier.align(Alignment.CenterHorizontally))
         }
     }
+}
+
+/** "Diseñada por: **Alexander Rosales**", con el nombre en negrita. */
+@Composable
+private fun Firma(modifier: Modifier = Modifier) {
+    Text(
+        buildAnnotatedString {
+            append("Diseñada por: ")
+            withStyle(SpanStyle(color = Tint.text, fontWeight = FontWeight.Bold)) {
+                append("Alexander Rosales")
+            }
+        },
+        modifier = modifier,
+        color = Tint.textSoft,
+        fontSize = 14.sp,
+        maxLines = 1,
+        softWrap = false,
+    )
 }
 
 /** Una baldosa grande o mediana: el icono, el nombre y, debajo, un dato. */

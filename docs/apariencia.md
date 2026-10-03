@@ -44,8 +44,8 @@ Eso manda tres cosas antes que cualquier gusto estético:
 │ │ Noticias 8 │ ┃ 002  ENFOCADO           ★   ┃ │   la pantalla completa) │ │
 │ │ Cine     8 │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ └─────────────────────────┘ │
 │ │            │   ^ tarjetaFoco + acento +       ┌─────────────────────────┐ │
-│ │ Diagnóstico│     grosorFoco; escalaFoco       │ 002  Nombre del canal   │ │
-│ │ Ajustes    │     lo agranda                   │ Reproduciendo · HLS     │ │
+│ │ Infantil 8 │     grosorFoco; escalaFoco       │ 002  Nombre del canal   │ │
+│ │ Música   8 │     lo agranda                   │ Reproduciendo · HLS     │ │
 │ └────────────┘                                  └─────────────────────────┘ │
 │  ^ anchoBarraLateral                                                       │
 │                 ▲▼ Moverse   OK Ver en ventana   OK ×2 Pantalla completa   │
