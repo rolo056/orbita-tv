@@ -18,6 +18,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -192,11 +194,12 @@ fun SettingsScreen(
             label = { Text("Dirección del archivo de apariencia", fontSize = 13.sp) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Tint.cardFocused,
-                unfocusedContainerColor = Tint.card,
+                focusedContainerColor = Color.White.copy(alpha = 0.14f),
+                unfocusedContainerColor = Color.White.copy(alpha = 0.07f),
                 focusedIndicatorColor = Tint.accent,
-                unfocusedIndicatorColor = Tint.line,
+                unfocusedIndicatorColor = Color.White.copy(alpha = 0.22f),
                 focusedLabelColor = Tint.accent,
                 unfocusedLabelColor = Tint.textSoft,
                 focusedTextColor = Tint.text,

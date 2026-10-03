@@ -34,6 +34,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -303,10 +305,16 @@ fun BoxScope.CineCapas(
     val error = stats.error
     if (error != null) {
         Box(
-            Modifier.fillMaxSize().background(Color(0xCC000000)).padding(48.dp),
+            Modifier.fillMaxSize().background(Color(0x99000000)).padding(48.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            PanelCristal(
+                Modifier.widthIn(max = 720.dp),
+                radio = 28.dp,
+                oscuro = true,
+                padding = PaddingValues(horizontal = 32.dp, vertical = 26.dp),
+                alineacion = Alignment.CenterHorizontally,
+            ) {
                 Text("No se pudo reproducir", color = Tint.fail, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(12.dp))
                 Text(error, color = Tint.text, fontSize = 15.sp)
@@ -328,8 +336,8 @@ fun BoxScope.CineCapas(
                 color = Tint.text,
                 fontSize = 16.sp,
                 modifier = Modifier
-                    .background(Color(0xB3000000), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                    .cristal(radio = 40.dp, oscuro = true)
+                    .padding(horizontal = 22.dp, vertical = 12.dp),
             )
         }
     }
@@ -344,8 +352,8 @@ fun BoxScope.CineCapas(
                 .align(Alignment.TopCenter)
                 .padding(top = 24.dp, start = 32.dp, end = 32.dp)
                 .widthIn(max = 720.dp)
-                .background(Color(0xCC000000), RoundedCornerShape(8.dp))
-                .padding(horizontal = 18.dp, vertical = 12.dp),
+                .cristal(radio = 22.dp, oscuro = true)
+                .padding(horizontal = 20.dp, vertical = 13.dp),
         )
     }
 
@@ -353,8 +361,8 @@ fun BoxScope.CineCapas(
         Column(
             Modifier
                 .align(Alignment.Center)
-                .background(Color(0xCC000000), RoundedCornerShape(10.dp))
-                .padding(horizontal = 28.dp, vertical = 20.dp),
+                .cristal(radio = 28.dp, oscuro = true)
+                .padding(horizontal = 32.dp, vertical = 22.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text("Siguiente episodio en $cuenta s", color = Tint.text, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
@@ -370,10 +378,11 @@ fun BoxScope.CineCapas(
 
     Column(
         Modifier
-            .align(Alignment.BottomStart)
+            .align(Alignment.BottomCenter)
+            .padding(horizontal = 28.dp, vertical = 22.dp)
             .fillMaxWidth()
-            .background(Color(0xB3000000))
-            .padding(horizontal = 32.dp, vertical = 18.dp),
+            .cristal(radio = 28.dp, oscuro = true)
+            .padding(horizontal = 28.dp, vertical = 18.dp),
     ) {
         if (!esTv) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { botones() }
@@ -442,14 +451,14 @@ private fun BarraDeTiempo(stats: CineStats, objetivo: Long?, onBarra: (Float) ->
             },
         contentAlignment = Alignment.CenterStart,
     ) {
-        Box(Modifier.fillMaxWidth().height(6.dp).background(Color(0x55FFFFFF))) {
-            Box(Modifier.fillMaxWidth(cargado).fillMaxHeight().background(Color(0x55FFFFFF)))
-            Box(Modifier.fillMaxWidth(visto).fillMaxHeight().background(Tint.accent))
+        Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(Color(0x40FFFFFF))) {
+            Box(Modifier.fillMaxWidth(cargado).fillMaxHeight().clip(RoundedCornerShape(3.dp)).background(Color(0x55FFFFFF)))
+            Box(Modifier.fillMaxWidth(visto).fillMaxHeight().clip(RoundedCornerShape(3.dp)).background(Tint.accent))
         }
         if (objetivo != null && dur > 0) {
             val f = (objetivo.toFloat() / dur).coerceIn(0f, 1f)
             Box(Modifier.fillMaxWidth(f).height(18.dp), contentAlignment = Alignment.CenterEnd) {
-                Box(Modifier.fillMaxHeight().padding(vertical = 1.dp).background(Tint.text).widthIn(min = 3.dp, max = 3.dp))
+                Box(Modifier.fillMaxHeight().padding(vertical = 1.dp).widthIn(min = 4.dp, max = 4.dp).clip(RoundedCornerShape(2.dp)).background(Tint.text))
             }
         }
     }

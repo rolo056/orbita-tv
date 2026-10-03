@@ -107,12 +107,17 @@ adb logcat -c
 
 # ------------------------------------------------------------ canales en vivo
 
-paso "1. Abrir la app: la lista de canales, con el primero enfocado"
+paso "1. Abrir la app: la pantalla de inicio, con TV en vivo enfocado"
 abrir ""
 sleep 18
-foto inicio
+foto menu
 foco
 textos
+
+paso "1b. OK en TV en vivo: la lista de canales, con el primero enfocado"
+teclas 4 $OK
+foto inicio
+foco
 
 paso "2. OK: el canal se ve en la ventana"
 teclas 12 $OK
@@ -142,20 +147,25 @@ teclas 3 $OK
 foto categoria
 textos
 
-paso "7. Derecha y arriba hasta el tope: a ver donde cae el foco (las secciones)"
-teclas 1 $DER
+paso "7. Atras: vuelve al inicio. Derecha y OK: Peliculas"
+teclas 3 $ATRAS
 foco
-teclas 1 $ARRIBA $ARRIBA $ARRIBA $ARRIBA
-foco
-foto arriba-del-todo
-teclas 2 $ARRIBA
-foco
+foto de-vuelta-al-menu
 teclas 2 $DER
 foco
-foto secciones
 teclas 8 $OK
-foto tras-ok-en-seccion
+foto tras-ok-en-peliculas
 textos
+
+paso "7b. Atras: el foco vuelve a Peliculas. Abajo y OK: Mi cuenta"
+teclas 3 $ATRAS
+foco
+teclas 1 $ABAJO
+foco
+teclas 4 $OK
+foto mi-cuenta
+textos
+teclas 3 $ATRAS
 
 # ------------------------------------------------------------------ peliculas
 
@@ -270,6 +280,7 @@ if sudo -n true 2> /dev/null && command -v iptables > /dev/null; then
   paso "22. Canal con corte: 40 segundos sin datos, a pantalla completa"
   abrir ""
   sleep 18
+  teclas 4 $OK
   teclas 10 $OK
   teclas 8 $OK
   foto canal-antes-del-corte

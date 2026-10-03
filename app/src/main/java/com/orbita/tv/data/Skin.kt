@@ -30,6 +30,13 @@ data class Skin(
      * el acento, y con un acento rojo un "activado" se leia como un error.
      */
     val ok: Long = 0xFF5FC9A0,
+    /**
+     * Los dos resplandores del fondo, detras del cristal. El vidrio necesita algo
+     * de color detras para leerse como vidrio. El primero, si el tema no lo dice,
+     * es el acento.
+     */
+    val glow1: Long? = null,
+    val glow2: Long = 0xFF6A2C7E,
 
     // Forma y foco. En un televisor a tres metros, el anillo de foco no es
     // decoracion: es lo unico que dice donde estas parado.
@@ -81,6 +88,12 @@ data class Skin(
                 warn = o.color("aviso", base.warn),
                 fail = o.color("falla", base.fail),
                 ok = o.color("bien", base.ok),
+                glow1 = if (o.has("resplandor")) {
+                    o.color("resplandor", base.glow1 ?: base.accent)
+                } else {
+                    base.glow1
+                },
+                glow2 = o.color("resplandor2", base.glow2),
 
                 radius = o.num("esquinas", base.radius, 0f, 40f),
                 focusWidth = o.num("grosorFoco", base.focusWidth, 0f, 8f),

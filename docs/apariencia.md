@@ -107,6 +107,8 @@ Las pantallas de verdad, dibujadas con el tema actual, están en la publicación
 | `aviso` | color | — | `#E0B252` | Advertencias del diagnóstico |
 | `falla` | color | — | `#E2705F` | Errores y canal detenido |
 | `bien` | color | — | `#5FC9A0` | "Todo bien": la prueba que pasó, la opción activada. Aparte del acento para que un acento rojo no haga leer un "activado" como error |
+| `resplandor` | color | — | el acento | La luz de arriba a la derecha del fondo, que se ve a través del cristal |
+| `resplandor2` | color | — | `#6A2C7E` | La luz de abajo a la izquierda del fondo |
 | `esquinas` | número (dp) | 0 – 40 | `10` | Redondeo de tarjetas |
 | `grosorFoco` | número (dp) | 0 – 8 | `2` | Grosor del anillo al enfocar |
 | `grosorReposo` | número (dp) | 0 – 8 | `1` | Grosor del borde en reposo |

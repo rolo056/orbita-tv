@@ -63,12 +63,11 @@ fun DiagnosticsScreen(
         Spacer(Modifier.height(20.dp))
 
         if (report != null) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .background(Tint.card)
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+            PanelCristal(
+                Modifier.fillMaxWidth(),
+                radio = 24.dp,
+                padding = androidx.compose.foundation.layout.PaddingValues(22.dp),
+                arreglo = Arrangement.spacedBy(8.dp),
             ) {
                 SectionTitle("CONCLUSIÓN")
                 // La conclusion lleva el color de lo peor que se encontro. Con
@@ -89,7 +88,7 @@ fun DiagnosticsScreen(
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(findings) { f ->
                 Row(
-                    Modifier.fillMaxWidth().background(Tint.card).padding(14.dp),
+                    Modifier.fillMaxWidth().cristal(radio = 18.dp).padding(16.dp),
                     verticalAlignment = Alignment.Top,
                 ) {
                     Box(

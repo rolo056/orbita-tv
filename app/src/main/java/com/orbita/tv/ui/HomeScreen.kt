@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -307,8 +308,9 @@ fun HomeScreen(
                     .padding(top = arribaDelCuerpo, end = pad)
                     .width(anchoPrevia)
                     .height(altoPrevia)
+                    .cristal(radio = 22.dp)
                 )
-                .background(Color.Black)
+                .then(if (pantallaCompleta) Modifier.background(Color.Black) else Modifier)
                 .pointerInput(pantallaCompleta) {
                     detectTapGestures {
                         if (pantallaCompleta) {
@@ -335,7 +337,17 @@ fun HomeScreen(
                         // tiene que saltar al protector de pantalla.
                         it.keepScreenOn = enVentana != null
                     },
-                    modifier = Modifier.fillMaxSize(),
+                    // En el recuadro, la imagen va dentro del marco de cristal y
+                    // con las esquinas redondeadas; a pantalla completa, entera.
+                    modifier = if (pantallaCompleta) {
+                        Modifier.fillMaxSize()
+                    } else {
+                        Modifier
+                            .fillMaxSize()
+                            .padding(7.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.Black)
+                    },
                 )
             }
             if (conPrevia && !pantallaCompleta) {
@@ -414,8 +426,8 @@ fun HomeScreen(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(24.dp)
-                            .background(Color(0xB3000000), RoundedCornerShape(8.dp))
-                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                            .cristal(radio = 40.dp, oscuro = true)
+                            .padding(horizontal = 16.dp, vertical = 9.dp),
                     )
                 }
                 if (!esTv && stats.fatalError == null) {
@@ -577,9 +589,11 @@ private fun FichaDelCanal(enVentana: Channel?, stats: PlaybackStats) {
         return
     }
     val falla = stats.fatalError
-    Column(
-        Modifier.fillMaxWidth().background(Tint.card).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+    PanelCristal(
+        Modifier.fillMaxWidth(),
+        radio = 22.dp,
+        padding = PaddingValues(18.dp),
+        arreglo = Arrangement.spacedBy(6.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (enVentana.icon != null) {
@@ -650,6 +664,9 @@ private fun Lista(
         else -> LazyColumn(
             state = estado,
             verticalArrangement = Arrangement.spacedBy(skin.gap.dp),
+            // Aire para el halo y el leve agrandado del foco: sin esto, la
+            // primera y la ultima fila quedan cortadas contra el borde.
+            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
         ) {
             itemsIndexed(visibles, key = { _, c -> c.streamId }) { i, c ->
                 val actual = enVentana?.streamId == c.streamId
@@ -730,9 +747,7 @@ private fun FilaCanal(
 @Composable
 private fun Aviso(texto: String?) {
     if (texto == null) return
-    Column(
-        Modifier.fillMaxWidth().background(Tint.card).padding(12.dp),
-    ) {
+    PanelCristal(Modifier.fillMaxWidth(), padding = PaddingValues(14.dp)) {
         Text(texto, color = Tint.accent, fontSize = 14.sp)
     }
     Spacer(Modifier.height(10.dp))

@@ -33,6 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
@@ -289,7 +292,7 @@ fun FichaSerieScreen(
                         LazyColumn(
                             state = estadoLista,
                             verticalArrangement = Arrangement.spacedBy(Tint.skin.gap.dp),
-                            contentPadding = PaddingValues(vertical = 4.dp),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                         ) {
                             itemsIndexed(episodios, key = { _, e -> e.id }) { _, e ->
                                 val av = biblioteca.avanceDeEpisodio(e.id)
@@ -387,7 +390,7 @@ private fun FilaEpisodio(
             }
             if (avance != null && avance.aMedias) {
                 Spacer(Modifier.height(6.dp))
-                Box(Modifier.fillMaxWidth().height(3.dp).background(Tint.line)) {
+                Box(Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.12f))) {
                     Box(Modifier.fillMaxWidth(avance.fraccion).fillMaxHeight().background(Tint.accent))
                 }
             }
@@ -425,7 +428,12 @@ private fun FondoDeFicha(
 @Composable
 private fun Portada(imagen: String?, titulo: String, modifier: Modifier) {
     Box(
-        modifier.aspectRatio(2f / 3f).clipToBounds().background(Tint.cardFocused),
+        modifier
+            .aspectRatio(2f / 3f)
+            .cristal(radio = 22.dp)
+            .padding(6.dp)
+            .clip(RoundedCornerShape(17.dp))
+            .background(Color.White.copy(alpha = 0.05f)),
         contentAlignment = Alignment.Center,
     ) {
         Text(

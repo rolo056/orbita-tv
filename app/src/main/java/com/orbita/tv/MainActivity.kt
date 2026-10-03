@@ -65,10 +65,16 @@ import com.orbita.tv.ui.Seccion
 import com.orbita.tv.ui.SettingsScreen
 import com.orbita.tv.ui.Tarjeta
 import com.orbita.tv.ui.Tint
+import com.orbita.tv.ui.Fondo
+import com.orbita.tv.ui.InicioScreen
+import com.orbita.tv.ui.CuentaScreen
+import com.orbita.tv.ui.venceLegible
+import com.orbita.tv.net.AccountStatus
+import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-private enum class Screen { LOGIN, HOME, FICHA_PELICULA, FICHA_SERIE, CINE, DIAGNOSTICS, SETTINGS }
+private enum class Screen { LOGIN, INICIO, HOME, FICHA_PELICULA, FICHA_SERIE, CINE, CUENTA, DIAGNOSTICS, SETTINGS }
 
 /** Lo que esta puesto en el reproductor de peliculas y episodios. */
 private data class Funcion(
@@ -90,7 +96,9 @@ class MainActivity : ComponentActivity() {
         val aparienciaInicial = aparienciaDePrueba()
         setContent {
             OrbitaTheme {
-                Box(Modifier.fillMaxSize().background(Tint.bg)) {
+                Box(Modifier.fillMaxSize()) {
+                    // El fondo con los resplandores, detras de todo el cristal.
+                    Fondo()
                     // Fondo remoto opcional. Va detras de todo y con opacidad
                     // propia, porque una foto a pantalla completa detras de
                     // texto claro arruina la legibilidad muy rapido.
@@ -191,6 +199,14 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
 
     var funcion by remember { mutableStateOf<Funcion?>(null) }
     var volverDeCine by remember { mutableStateOf(Screen.HOME) }
+    var volverDeAjustes by remember { mutableStateOf(Screen.INICIO) }
+    var ultimaBaldosa by remember { mutableStateOf("vivo") }
+
+    // Lo que el panel dice de la cuenta: vencimiento y conexiones. Se muestra en
+    // la pantalla de inicio y en Mi cuenta.
+    var estadoCuenta by remember { mutableStateOf<AccountStatus?>(null) }
+    var consultandoCuenta by remember { mutableStateOf(false) }
+    var errorCuenta by remember { mutableStateOf<String?>(null) }
 
     // Un solo motor de reproduccion para toda la sesion. Es lo que permite que
     // la vista previa y la pantalla completa sean el mismo stream y una sola
@@ -277,6 +293,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
             // "el panel autentica pero no devolvio canales": falso en las dos
             // mitades, y encima escondia el motivo real.
             val estado = xt.status()
+            estadoCuenta = estado
             if (!estado.authOk) {
                 error = "El panel rechazo la cuenta. Revisa usuario y contrasena, " +
                     "o si la cuenta vencio."
@@ -341,7 +358,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
         biblioteca = if (guardada.cuenta == firma) guardada else Biblioteca(cuenta = firma)
         booted = true
         if (!settings.account.isEmpty) {
-            screen = Screen.HOME
+            screen = Screen.INICIO
             cargarTodo()
         }
     }
@@ -536,6 +553,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
         if (s in secciones) {
             seccionPendiente = null
             irASeccion(s)
+            screen = Screen.HOME
         }
     }
 
@@ -594,9 +612,44 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
         }
     }
 
-    // Atras desde peliculas o series vuelve a los canales, no cierra la app.
-    BackHandler(enabled = screen == Screen.HOME && seccion != Seccion.EN_VIVO) {
-        irASeccion(Seccion.EN_VIVO)
+    fun actualizar() {
+        val info = update
+        if (info != null && !updating) {
+            updating = true
+            scope.launch {
+                val file = Updater.download(ctx, info, settings.net)
+                updating = false
+                if (file != null) Updater.install(ctx, file)
+            }
+        }
+    }
+
+    fun consultarCuenta() {
+        if (consultandoCuenta) return
+        consultandoCuenta = true
+        errorCuenta = null
+        scope.launch {
+            try {
+                estadoCuenta = panel.status()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                errorCuenta = Xtream.mensajeAmigable(e)
+            } finally {
+                consultandoCuenta = false
+            }
+        }
+    }
+
+    fun hayPeliculas(): Boolean = estantePeliculas.categorias.isNotEmpty() ||
+        hayPeliculasPorSeguir() || biblioteca.favoritas.any { !it.serie }
+
+    fun haySeries(): Boolean = estanteSeries.categorias.isNotEmpty() ||
+        biblioteca.recientes.any { it.serie } || biblioteca.favoritas.any { it.serie }
+
+    // Atras desde canales, peliculas o series vuelve al inicio, no cierra la app.
+    BackHandler(enabled = screen == Screen.HOME) {
+        screen = Screen.INICIO
     }
 
     when (screen) {
@@ -626,10 +679,85 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                     estantePeliculas.vaciar()
                     estanteSeries.vaciar()
                     cargarTodo()
-                    if (error == null) screen = Screen.HOME
+                    if (error == null) screen = Screen.INICIO
                 }
             },
             onDiagnostics = { abrirDiagnostico(Screen.LOGIN) },
+            onSalir = if (settings.account.isEmpty) null else ({ screen = Screen.CUENTA }),
+        )
+
+        Screen.INICIO -> InicioScreen(
+            usuario = settings.account.username,
+            vence = estadoCuenta?.let { venceLegible(it.expires) },
+            conexiones = estadoCuenta?.let { it.activeConnections.toString() + " de " + it.maxConnections },
+            subVivo = when {
+                allChannels.isNotEmpty() -> cantidad(allChannels.size, "canal", "canales")
+                loading -> "Cargando…"
+                error != null -> "Sin conexión"
+                else -> null
+            },
+            subPeliculas = when {
+                estantePeliculas.categorias.isNotEmpty() ->
+                    cantidad(estantePeliculas.categorias.size, "categoría", "categorías")
+                loading -> "Cargando…"
+                hayPeliculas() -> null
+                else -> "No disponible"
+            },
+            subSeries = when {
+                estanteSeries.categorias.isNotEmpty() ->
+                    cantidad(estanteSeries.categorias.size, "categoría", "categorías")
+                loading -> "Cargando…"
+                haySeries() -> null
+                else -> "No disponible"
+            },
+            update = update,
+            updating = updating,
+            onUpdate = { actualizar() },
+            onVivo = {
+                ultimaBaldosa = "vivo"
+                seccion = Seccion.EN_VIVO
+                screen = Screen.HOME
+            },
+            onPeliculas = {
+                if (hayPeliculas()) {
+                    ultimaBaldosa = "peliculas"
+                    irASeccion(Seccion.PELICULAS)
+                    screen = Screen.HOME
+                }
+            },
+            onSeries = {
+                if (haySeries()) {
+                    ultimaBaldosa = "series"
+                    irASeccion(Seccion.SERIES)
+                    screen = Screen.HOME
+                }
+            },
+            onCuenta = {
+                ultimaBaldosa = "cuenta"
+                consultarCuenta()
+                screen = Screen.CUENTA
+            },
+            onDiagnostico = {
+                ultimaBaldosa = "diagnostico"
+                abrirDiagnostico(Screen.INICIO)
+            },
+            onAjustes = {
+                ultimaBaldosa = "ajustes"
+                volverDeAjustes = Screen.INICIO
+                screen = Screen.SETTINGS
+            },
+            enfocar = ultimaBaldosa,
+        )
+
+        Screen.CUENTA -> CuentaScreen(
+            usuario = settings.account.username,
+            servidor = settings.account.host + ":" + settings.account.port,
+            estado = estadoCuenta,
+            cargando = consultandoCuenta,
+            error = errorCuenta,
+            onActualizar = { consultarCuenta() },
+            onCambiarCuenta = { screen = Screen.LOGIN },
+            onSalir = { screen = Screen.INICIO },
         )
 
         Screen.HOME -> when (seccion) {
@@ -647,7 +775,10 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                 onStop = { engine?.stop() },
                 onToggleFavorite = { alternarFavorito(it) },
                 onDiagnostics = { abrirDiagnostico(Screen.HOME) },
-                onSettings = { screen = Screen.SETTINGS },
+                onSettings = {
+                    volverDeAjustes = Screen.HOME
+                    screen = Screen.SETTINGS
+                },
                 notice = aviso,
                 update = update,
                 updating = updating,
@@ -663,14 +794,14 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                     }
                 },
                 seccion = seccion,
-                secciones = secciones,
-                onSeccion = { irASeccion(it) },
+                secciones = listOf(seccion),
+                onSeccion = {},
             )
 
             Seccion.PELICULAS -> CatalogoScreen(
                 seccion = seccion,
-                secciones = secciones,
-                onSeccion = { irASeccion(it) },
+                secciones = listOf(seccion),
+                onSeccion = {},
                 categorias = estantePeliculas.categorias,
                 abierta = estantePeliculas.abierta,
                 haySeguir = hayPeliculasPorSeguir(),
@@ -690,13 +821,16 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                     guardarBiblioteca()
                 },
                 onDiagnostics = { abrirDiagnostico(Screen.HOME) },
-                onSettings = { screen = Screen.SETTINGS },
+                onSettings = {
+                    volverDeAjustes = Screen.HOME
+                    screen = Screen.SETTINGS
+                },
             )
 
             Seccion.SERIES -> CatalogoScreen(
                 seccion = seccion,
-                secciones = secciones,
-                onSeccion = { irASeccion(it) },
+                secciones = listOf(seccion),
+                onSeccion = {},
                 categorias = estanteSeries.categorias,
                 abierta = estanteSeries.abierta,
                 haySeguir = biblioteca.recientes.any { it.serie },
@@ -713,7 +847,10 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                     guardarBiblioteca()
                 },
                 onDiagnostics = { abrirDiagnostico(Screen.HOME) },
-                onSettings = { screen = Screen.SETTINGS },
+                onSettings = {
+                    volverDeAjustes = Screen.HOME
+                    screen = Screen.SETTINGS
+                },
             )
         }
 
@@ -852,10 +989,14 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                     screen = Screen.LOGIN
                 }
             },
-            onExit = { screen = Screen.HOME },
+            onExit = { screen = volverDeAjustes },
         )
     }
 }
+
+/** "1.234 canales", "1 canal". */
+private fun cantidad(n: Int, singular: String, plural: String): String =
+    String.format(Locale("es"), "%,d", n) + " " + (if (n == 1) singular else plural)
 
 private fun anioDe(fecha: String): String? = Regex("""(19|20)\d{2}""").find(fecha)?.value
 

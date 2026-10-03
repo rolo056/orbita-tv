@@ -61,6 +61,8 @@ object Tint {
     val warn: Color get() = Color(skin.warn)
     val fail: Color get() = Color(skin.fail)
     val ok: Color get() = Color(skin.ok)
+    val glow1: Color get() = Color(skin.glow1 ?: skin.accent)
+    val glow2: Color get() = Color(skin.glow2)
 }
 
 @Composable
@@ -146,8 +148,9 @@ fun TextoQueCabe(
 }
 
 /**
- * Fila enfocable con anillo de foco visible. Es el ladrillo de toda la app: en
- * un TV el usuario no ve el puntero, solo ve donde esta parado.
+ * Fila enfocable. Es el ladrillo de toda la app: en un TV el usuario no ve el
+ * puntero, solo ve donde esta parado. Es de cristal, como todos los botones:
+ * ver BotonCristal.
  */
 @Composable
 fun FocusRow(
@@ -159,28 +162,14 @@ fun FocusRow(
     onFocus: (() -> Unit)? = null,
     content: @Composable (focused: Boolean) -> Unit,
 ) {
-    val skin = Tint.skin
-    var focused by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(skin.radius.dp)
-    Box(
-        modifier = modifier
-            .onFocusChanged {
-                focused = it.isFocused
-                if (it.isFocused) onFocus?.invoke()
-            }
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .scale(if (focused) skin.focusScale else 1f)
-            .background(if (focused) Tint.cardFocused else Tint.card, shape)
-            .border(
-                width = (if (focused) skin.focusWidth else skin.restWidth).dp,
-                color = if (focused) Tint.accent else Tint.line,
-                shape = shape,
-            )
-            .padding(padding),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        content(focused)
-    }
+    BotonCristal(
+        onClick = onClick,
+        modifier = modifier,
+        padding = padding,
+        onLongClick = onLongClick,
+        onFocus = onFocus,
+        content = content,
+    )
 }
 
 @Composable
