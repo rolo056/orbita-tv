@@ -23,6 +23,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
@@ -106,7 +108,12 @@ fun Cabecera(
             )
         }
         Spacer(Modifier.height(CABECERA_EXTRA - 1.dp))
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Tint.line))
+        // Una linea que se desvanece en los extremos, sin cortes duros.
+        Box(
+            Modifier.fillMaxWidth().height(1.dp).background(
+                Brush.horizontalGradient(listOf(Color.Transparent, Tint.line, Tint.line, Color.Transparent))
+            )
+        )
     }
 }
 
@@ -349,8 +356,8 @@ private fun Tecla(tecla: String, que: String) {
             maxLines = 1,
             softWrap = false,
             modifier = Modifier
-                .background(Tint.card)
-                .padding(horizontal = 7.dp, vertical = 3.dp),
+                .cristal(radio = 9.dp)
+                .padding(horizontal = 9.dp, vertical = 4.dp),
         )
         Spacer(Modifier.width(7.dp))
         Text(que, color = Tint.textSoft, fontSize = 12.sp, maxLines = 1, softWrap = false)

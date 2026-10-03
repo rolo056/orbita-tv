@@ -20,6 +20,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.activity.compose.BackHandler
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -39,7 +42,10 @@ fun LoginScreen(
     busy: Boolean,
     onSave: (Account) -> Unit,
     onDiagnostics: () -> Unit,
+    /** Cuando ya hay una cuenta y se viene a cambiarla, Atras vuelve sin tocar nada. */
+    onSalir: (() -> Unit)? = null,
 ) {
+    BackHandler(enabled = onSalir != null) { onSalir?.invoke() }
     var host by remember { mutableStateOf(initial.host) }
     var port by remember { mutableStateOf(if (initial.port > 0) initial.port.toString() else "80") }
     var user by remember { mutableStateOf(initial.username) }
@@ -135,11 +141,12 @@ private fun Field(
         label = { Text(label, fontSize = 13.sp) },
         singleLine = true,
         modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Tint.cardFocused,
-            unfocusedContainerColor = Tint.card,
+            focusedContainerColor = Color.White.copy(alpha = 0.14f),
+            unfocusedContainerColor = Color.White.copy(alpha = 0.07f),
             focusedIndicatorColor = Tint.accent,
-            unfocusedIndicatorColor = Tint.line,
+            unfocusedIndicatorColor = Color.White.copy(alpha = 0.22f),
             focusedLabelColor = Tint.accent,
             unfocusedLabelColor = Tint.textSoft,
             focusedTextColor = Tint.text,

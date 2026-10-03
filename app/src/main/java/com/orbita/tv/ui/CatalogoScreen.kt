@@ -28,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -241,12 +243,13 @@ private fun TarjetaDeTitulo(
         padding = PaddingValues(0.dp),
     ) {
         Column(Modifier.fillMaxWidth()) {
+            val radio = radioDe(Tint.skin)
             Box(
                 Modifier
                     .fillMaxWidth()
                     .aspectRatio(2f / 3f)
-                    .clipToBounds()
-                    .background(Tint.cardFocused),
+                    .clip(RoundedCornerShape(topStart = radio, topEnd = radio))
+                    .background(Color.White.copy(alpha = 0.06f)),
                 contentAlignment = Alignment.Center,
             ) {
                 // Debajo de la portada, el titulo: es lo que queda a la vista si
@@ -275,8 +278,9 @@ private fun TarjetaDeTitulo(
                         fontSize = 15.sp,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .background(Color(0xB3000000))
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                            .padding(8.dp)
+                            .cristal(radio = 20.dp, oscuro = true)
+                            .padding(horizontal = 7.dp, vertical = 3.dp),
                     )
                 }
                 val avance = t.avance
@@ -284,9 +288,11 @@ private fun TarjetaDeTitulo(
                     Box(
                         Modifier
                             .align(Alignment.BottomStart)
+                            .padding(horizontal = 10.dp, vertical = 10.dp)
                             .fillMaxWidth()
                             .height(5.dp)
-                            .background(Color(0xB3000000)),
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(Color(0x99000000)),
                     ) {
                         Box(Modifier.fillMaxWidth(avance).fillMaxHeight().background(Tint.accent))
                     }

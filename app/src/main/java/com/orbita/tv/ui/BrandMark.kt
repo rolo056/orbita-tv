@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -63,7 +64,7 @@ fun BrandMark(
             maxLines = 1,
             softWrap = false,
             modifier = Modifier
-                .background(Tint.accent)
+                .background(Tint.accent, RoundedCornerShape(7.dp))
                 .padding(horizontal = 7.dp, vertical = 4.dp),
         )
     }

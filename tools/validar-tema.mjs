@@ -24,6 +24,7 @@ const ESQUEMA = {
   linea: { t: 'color' }, texto: { t: 'color' }, textoSuave: { t: 'color' },
   acento: { t: 'color' }, aviso: { t: 'color' }, falla: { t: 'color' },
   bien: { t: 'color' },
+  resplandor: { t: 'color' }, resplandor2: { t: 'color' },
   esquinas: { t: 'num', min: 0, max: 40 },
   grosorFoco: { t: 'num', min: 0, max: 8 },
   grosorReposo: { t: 'num', min: 0, max: 8 },

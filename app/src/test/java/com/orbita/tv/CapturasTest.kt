@@ -22,7 +22,9 @@ import com.orbita.tv.diag.DiagReport
 import com.orbita.tv.diag.Finding
 import com.orbita.tv.diag.Level
 import com.orbita.tv.net.Category
+import com.orbita.tv.net.AccountStatus
 import com.orbita.tv.net.Channel
+import com.orbita.tv.net.UpdateInfo
 import com.orbita.tv.net.Episode
 import com.orbita.tv.net.Movie
 import com.orbita.tv.net.MovieInfo
@@ -34,6 +36,9 @@ import com.orbita.tv.player.PlaybackStats
 import com.orbita.tv.ui.CAT_SEGUIR
 import com.orbita.tv.ui.CatalogoScreen
 import com.orbita.tv.ui.CineCapas
+import com.orbita.tv.ui.CuentaScreen
+import com.orbita.tv.ui.Fondo
+import com.orbita.tv.ui.InicioScreen
 import com.orbita.tv.ui.DiagnosticsScreen
 import com.orbita.tv.ui.FichaPeliculaScreen
 import com.orbita.tv.ui.FichaSerieScreen
@@ -150,7 +155,10 @@ class CapturasTest {
     private fun capturar(nombre: String, contenido: @Composable () -> Unit) {
         captureRoboImage(filePath = "build/capturas/$nombre.png") {
             OrbitaTheme {
-                Box(Modifier.fillMaxSize().background(Tint.bg)) { contenido() }
+                Box(Modifier.fillMaxSize()) {
+                    Fondo()
+                    contenido()
+                }
             }
         }
     }
@@ -185,6 +193,57 @@ class CapturasTest {
             onUpdate = {},
             notice = aviso,
             secciones = secciones,
+        )
+    }
+
+    // ----------------------------------------------------- pantalla de inicio
+
+    @Composable
+    private fun Menu(actualizacion: UpdateInfo? = null) {
+        InicioScreen(
+            usuario = "Alex",
+            vence = "2 de diciembre de 2026",
+            conexiones = "1 de 3",
+            subVivo = "1.234 canales",
+            subPeliculas = "9 categorías",
+            subSeries = "8 categorías",
+            update = actualizacion,
+            updating = false,
+            onUpdate = {},
+            onVivo = {},
+            onPeliculas = {},
+            onSeries = {},
+            onCuenta = {},
+            onDiagnostico = {},
+            onAjustes = {},
+        )
+    }
+
+    @Test
+    fun tv_menu() = capturar("tv-00-menu") { Menu() }
+
+    @Test
+    fun tv_menu_con_actualizacion() = capturar("tv-00b-menu-con-actualizacion") {
+        Menu(UpdateInfo(28, "1.0.28", "", ""))
+    }
+
+    @Test
+    fun tv_menu_texto_grande() {
+        aplicarTema("""{"escalaTexto":1.3}""", conArchivo = true)
+        capturar("tv-00c-menu-texto-grande") { Menu() }
+    }
+
+    @Test
+    fun tv_cuenta() = capturar("tv-23-cuenta") {
+        CuentaScreen(
+            usuario = "Alex",
+            servidor = "203.0.113.10:25461",
+            estado = AccountStatus(true, "Active", "1796176800", 3, 1),
+            cargando = false,
+            error = null,
+            onActualizar = {},
+            onCambiarCuenta = {},
+            onSalir = {},
         )
     }
 
@@ -544,6 +603,13 @@ class CapturasTest {
         capturar("tel-03-inicio-con-secciones") {
             Inicio(secciones = listOf(Seccion.EN_VIVO, Seccion.PELICULAS, Seccion.SERIES))
         }
+    }
+
+    @Test
+    @Config(sdk = [34], qualifiers = TELEFONO_VERTICAL)
+    fun telefono_vertical_menu() {
+        conDedo()
+        capturar("tel-00-menu") { Menu() }
     }
 
     @Test

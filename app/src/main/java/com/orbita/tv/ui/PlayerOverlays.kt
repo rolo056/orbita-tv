@@ -18,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
@@ -37,10 +39,16 @@ import com.orbita.tv.player.PlaybackStats
 @Composable
 fun BoxScope.PlayerFatal(stats: PlaybackStats, esTv: Boolean, onRetry: () -> Unit) {
     Box(
-        Modifier.fillMaxSize().background(Color(0xCC000000)).padding(48.dp),
+        Modifier.fillMaxSize().background(Color(0x99000000)).padding(48.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        PanelCristal(
+            Modifier.widthIn(max = 720.dp),
+            radio = 28.dp,
+            oscuro = true,
+            padding = PaddingValues(horizontal = 32.dp, vertical = 26.dp),
+            alineacion = Alignment.CenterHorizontally,
+        ) {
             Text("Canal detenido", color = Tint.fail, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(12.dp))
             Text(stats.fatalError ?: "", color = Tint.text, fontSize = 15.sp)
@@ -67,11 +75,11 @@ fun BoxScope.PlayerFatal(stats: PlaybackStats, esTv: Boolean, onRetry: () -> Uni
 @Composable
 fun BoxScope.PlayerRetryNotice(stats: PlaybackStats) {
     Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-        Column(
-            Modifier
-                .background(Color(0xCC000000), RoundedCornerShape(10.dp))
-                .padding(horizontal = 24.dp, vertical = 18.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+        PanelCristal(
+            radio = 26.dp,
+            oscuro = true,
+            padding = PaddingValues(horizontal = 28.dp, vertical = 20.dp),
+            alineacion = Alignment.CenterHorizontally,
         ) {
             Text("Sin señal", color = Tint.warn, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(6.dp))
@@ -86,10 +94,11 @@ fun BoxScope.PlayerRetryNotice(stats: PlaybackStats) {
 fun BoxScope.PlayerInfoBar(stats: PlaybackStats, esTv: Boolean) {
     Column(
         Modifier
-            .align(Alignment.BottomStart)
+            .align(Alignment.BottomCenter)
+            .padding(horizontal = 28.dp, vertical = 22.dp)
             .fillMaxWidth()
-            .background(Color(0xB3000000))
-            .padding(horizontal = 32.dp, vertical = 20.dp),
+            .cristal(radio = 26.dp, oscuro = true)
+            .padding(horizontal = 28.dp, vertical = 18.dp),
     ) {
         Text(
             stats.channelName,
@@ -128,8 +137,8 @@ fun BoxScope.PlayerHud(stats: PlaybackStats) {
         Modifier
             .align(Alignment.TopEnd)
             .padding(20.dp)
-            .background(Color(0xCC000000), RoundedCornerShape(10.dp))
-            .padding(16.dp)
+            .cristal(radio = 24.dp, oscuro = true)
+            .padding(18.dp)
             .width(320.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -164,9 +173,9 @@ private fun HudLine(label: String, value: String) {
 fun TouchButton(label: String, onClick: () -> Unit) {
     Box(
         Modifier
-            .background(Color(0xB3000000), RoundedCornerShape(8.dp))
+            .cristal(radio = 40.dp, oscuro = true)
             .pointerInput(label) { detectTapGestures { onClick() } }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 18.dp, vertical = 12.dp),
     ) {
         Text(label, color = Tint.text, fontSize = 15.sp, fontWeight = FontWeight.Medium)
     }
