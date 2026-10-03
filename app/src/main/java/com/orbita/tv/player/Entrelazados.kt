@@ -66,7 +66,7 @@ private class HoraHeredada(private val lector: H264Reader) : ElementaryStreamRea
         lector.seek()
     }
 
-    override fun createTracks(extractorOutput: ExtractorOutput, idGenerator: PesReader.TrackIdGenerator) =
+    override fun createTracks(extractorOutput: ExtractorOutput, idGenerator: TsPayloadReader.TrackIdGenerator) =
         lector.createTracks(extractorOutput, idGenerator)
 
     override fun packetStarted(pesTimeUs: Long, flags: Int) {
