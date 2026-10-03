@@ -101,6 +101,9 @@ jobs:
             [ -f "$f" ] || continue
             ffmpeg -hide_banner -loglevel error -y -i "$f" -q:v 3 "${f%.png}.jpg" && rm -f "$f"
           done
+          # GitHub no acepta subir archivos vacios, y caidas.txt queda vacio
+          # justamente cuando todo salio bien.
+          find salida -type f -empty -delete
           ls salida > salida/indice.txt
           cat salida/informe.txt | head -150
 
