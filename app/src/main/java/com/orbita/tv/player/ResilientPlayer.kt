@@ -38,6 +38,11 @@ data class PlaybackStats(
     /** Mayor que cero cuando se agoto la escalera y se sigue insistiendo despacio. */
     val retryRound: Int = 0,
     val fatalError: String? = null,
+    /**
+     * Cierto solo mientras de verdad hay imagen corriendo. La pantalla lo usa
+     * para no dejar nunca una imagen congelada sin una palabra que la explique.
+     */
+    val onAir: Boolean = false,
 )
 
 /**
@@ -102,7 +107,14 @@ class ResilientPlayer(
                     _stats.value = _stats.value.copy(
                         status = "Reproduciendo",
                         retryRound = 0,
+                        onAir = true,
                     )
+                } else if (state == Player.STATE_BUFFERING && startedOnVariant &&
+                    _stats.value.onAir
+                ) {
+                    // Se acabo lo guardado y no llega mas: la imagen queda
+                    // quieta. Todavia no es una falla, pero se dice.
+                    _stats.value = _stats.value.copy(status = "Esperando datos", onAir = false)
                 }
             }
         })
@@ -207,6 +219,7 @@ class ResilientPlayer(
             variantUrl = v.url,
             status = status,
             fatalError = null,
+            onAir = false,
         )
         resetWatchdog()
         startedOnVariant = false
@@ -355,6 +368,7 @@ class ResilientPlayer(
         _stats.value = _stats.value.copy(
             status = "Sin señal · reintentando en " + (wait / 1000) + " s",
             retryRound = ladderRounds,
+            onAir = false,
         )
         retryJob = scope.launch {
             delay(wait)
@@ -372,13 +386,14 @@ class ResilientPlayer(
         _stats.value = _stats.value.copy(
             status = status,
             reconnects = _stats.value.reconnects + 1,
+            onAir = false,
         )
     }
 
     private fun fatal(message: String) {
         retryJob?.cancel()
         player.stop()
-        _stats.value = _stats.value.copy(status = "Detenido", fatalError = message)
+        _stats.value = _stats.value.copy(status = "Detenido", fatalError = message, onAir = false)
     }
 
     private fun resetWatchdog() {
@@ -457,6 +472,21 @@ class ResilientPlayer(
     }
 
     /**
+     * El usuario cerro lo que estaba viendo. A diferencia de [onBackground], no
+     * se retoma solo al volver: no queda nada pendiente.
+     */
+    fun stop() {
+        retryJob?.cancel()
+        deadlineJob?.cancel()
+        currentStreamId = -1
+        variants = emptyList()
+        player.stop()
+        player.clearMediaItems()
+        resetWatchdog()
+        _stats.value = PlaybackStats()
+    }
+
+    /**
      * La app dejo de estar en pantalla. Se corta todo: un reproductor
      * reintentando en segundo plano, invisible, es como se acumulan miles de
      * conexiones sin que nadie se entere.
@@ -466,7 +496,7 @@ class ResilientPlayer(
         deadlineJob?.cancel()
         player.pause()
         player.stop()
-        _stats.value = _stats.value.copy(status = "En pausa")
+        _stats.value = _stats.value.copy(status = "En pausa", onAir = false)
     }
 
     /** Volvio a pantalla: se retoma el canal que estaba puesto, si habia uno. */

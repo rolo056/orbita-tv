@@ -30,11 +30,16 @@ data class UpdateInfo(
  */
 object Updater {
 
+    private const val PAQUETE_PUBLICADO = "com.orbita.tv"
+
     private const val VERSION_URL =
         "https://github.com/rolo056/orbita-tv/releases/download/ultima/version.json"
 
     /** Devuelve la version nueva, o null si ya estamos al dia o no se pudo saber. */
     suspend fun check(ctx: Context, net: NetSettings): UpdateInfo? = withContext(Dispatchers.IO) {
+        // La variante de prueba no se actualiza sola: lo publicado es la otra
+        // app, y ofrecerla desde aca instalaria esa en vez de actualizar esta.
+        if (ctx.packageName != PAQUETE_PUBLICADO) return@withContext null
         val local = localVersionCode(ctx)
         val raw = runCatching {
             val client = Http.client(net, readTimeoutSeconds = 10)

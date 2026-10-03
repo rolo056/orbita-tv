@@ -50,8 +50,11 @@ fun BoxScope.PlayerFatal(stats: PlaybackStats, esTv: Boolean, onRetry: () -> Uni
             }
             Spacer(Modifier.height(12.dp))
             Hint(
-                if (esTv) "Atrás para volver a la lista · Arriba y abajo para cambiar de canal"
-                else "Atrás para volver a la lista"
+                if (esTv) {
+                    "OK reintenta · Arriba y abajo cambian de canal · Atrás vuelve a la lista"
+                } else {
+                    "Atrás para volver a la lista"
+                }
             )
         }
     }

@@ -25,6 +25,11 @@ data class Skin(
     val accent: Long = 0xFF5FC9A0,
     val warn: Long = 0xFFE0B252,
     val fail: Long = 0xFFE2705F,
+    /**
+     * "Todo bien": la prueba que paso, la opcion activada. Antes se dibujaba con
+     * el acento, y con un acento rojo un "activado" se leia como un error.
+     */
+    val ok: Long = 0xFF5FC9A0,
 
     // Forma y foco. En un televisor a tres metros, el anillo de foco no es
     // decoracion: es lo unico que dice donde estas parado.
@@ -75,6 +80,7 @@ data class Skin(
                 accent = o.color("acento", base.accent),
                 warn = o.color("aviso", base.warn),
                 fail = o.color("falla", base.fail),
+                ok = o.color("bien", base.ok),
 
                 radius = o.num("esquinas", base.radius, 0f, 40f),
                 focusWidth = o.num("grosorFoco", base.focusWidth, 0f, 8f),

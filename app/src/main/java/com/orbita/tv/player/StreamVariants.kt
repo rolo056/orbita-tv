@@ -38,6 +38,18 @@ object StreamVariants {
         }
     }
 
+    /**
+     * Una pelicula o un episodio. A diferencia de un canal, es un archivo: tiene
+     * una sola forma de pedirse y la extension es parte de la direccion.
+     */
+    fun forMovie(account: Account, streamId: Int, extension: String): String =
+        account.base + "/movie/" + enc(account.username) + "/" + enc(account.password) +
+            "/" + streamId + "." + extension
+
+    fun forEpisode(account: Account, episodeId: Int, extension: String): String =
+        account.base + "/series/" + enc(account.username) + "/" + enc(account.password) +
+            "/" + episodeId + "." + extension
+
     private fun enc(s: String): String =
         java.net.URLEncoder.encode(s, "UTF-8").replace("+", "%20")
 }

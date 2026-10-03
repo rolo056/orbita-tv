@@ -37,6 +37,18 @@ android {
     }
 
     buildTypes {
+        // La variante de prueba se instala AL LADO de la app de siempre, como
+        // otra app ("ALEX TV prueba"): probar algo nuevo no obliga a
+        // desinstalar la que funciona ni a volver a cargarle la cuenta. Va con
+        // la misma firma estable, para que una prueba nueva se instale encima
+        // de la prueba anterior.
+        debug {
+            applicationIdSuffix = ".prueba"
+            versionNameSuffix = " de prueba"
+            if (claveEstable.exists()) {
+                signingConfig = signingConfigs.getByName("estable")
+            }
+        }
         release {
             isMinifyEnabled = false
             // No pasa por Play Store: se instala a mano. La contrasena esta a la
@@ -63,6 +75,23 @@ android {
 
     buildFeatures {
         compose = true
+    }
+
+    // Las "pruebas" de este proyecto dibujan cada pantalla a un PNG, sin emulador.
+    // Existen porque aqui no hay forma de ver la app antes de instalarla en el
+    // televisor, y los fallos de pantalla solo aparecian en las fotos del usuario.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                it.maxHeapSize = "3g"
+                it.systemProperty("roborazzi.test.record", "true")
+                it.testLogging {
+                    events("passed", "failed", "skipped")
+                    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                }
+            }
+        }
     }
 
     packaging {
@@ -93,4 +122,14 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp-dnsoverhttps:4.12.0")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("androidx.test:core:1.7.0")
+    testImplementation("androidx.test.ext:junit:1.3.0")
+    // 1.60.0 es la ultima legible por Kotlin 2.0: desde la 1.61.0 la libreria se
+    // compila con Kotlin 2.3 y este proyecto no puede leer sus metadatos. Subirla
+    // exige subir antes el Kotlin de toda la app.
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.60.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.60.0")
 }

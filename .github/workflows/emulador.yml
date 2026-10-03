@@ -1,0 +1,143 @@
+name: Prueba en emulador
+
+# Abre la app en un emulador de televisor y la recorre con el mando: un canal,
+# una pelicula, un episodio. Contra un panel de mentira con video de prueba.
+#
+# Corre solo en la rama de desarrollo y NO publica ninguna version de la app:
+# la etiqueta "ultima", que es la que instala el televisor, no se toca.
+
+on:
+  push:
+    branches: [desarrollo]
+    paths:
+      - 'app/**'
+      - 'tools/e2e/**'
+      - '.github/workflows/emulador.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Si llega un cambio nuevo mientras corre, la corrida vieja ya no sirve.
+concurrency:
+  group: emulador
+  cancel-in-progress: true
+
+jobs:
+  recorrido:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar el SDK
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          MGR="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$MGR" ]; then
+            yes | "$MGR" --licenses >/dev/null 2>&1 || true
+            "$MGR" --install "platforms;android-35" "build-tools;35.0.0" || true
+          fi
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      # La variante de prueba: la misma app, mas la posibilidad de abrirla ya
+      # conectada a una cuenta. Esa posibilidad no existe en la que se publica.
+      - name: Compilar la variante de prueba
+        run: |
+          set -o pipefail
+          gradle :app:assembleDebug --no-daemon 2>&1 | tee compilacion.txt | tail -30
+          ls -la app/build/outputs/apk/debug/
+
+      - name: Armar el video de prueba
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg > /dev/null
+          bash tools/e2e/preparar-medios.sh medios
+
+      # Sin esto el emulador corre sin aceleracion y tarda diez veces mas.
+      - name: Permitir la aceleracion del emulador
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Android 6 de televisor: de lo mas viejo que hay, a proposito. El
+      # televisor de casa es viejo, y lo que falla en uno viejo no se ve en uno
+      # nuevo.
+      - name: Recorrer la app en el emulador
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 23
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          disable-animations: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: bash tools/e2e/recorrido.sh app/build/outputs/apk/debug/app-debug.apk medios salida
+
+      - name: Reunir lo que salio
+        if: always()
+        run: |
+          mkdir -p salida
+          {
+            echo "commit ${{ github.sha }}"
+            echo "=== recorrido ==="
+            cat salida/recorrido.txt 2>/dev/null || echo "(el recorrido no llego a correr)"
+            echo "=== errores de compilacion ==="
+            grep -nE "^e: |error:|FAILED|Caused by" compilacion.txt 2>/dev/null | head -80 || true
+          } > salida/informe.txt
+          rm -f salida/ui.xml
+          ls salida > salida/indice.txt
+          cat salida/informe.txt | head -150
+
+      # La variante de prueba queda lista para instalar AL LADO de la app de
+      # siempre, en una direccion que no cambia. Solo se publica si el recorrido
+      # llego hasta el final y la app no se cayo ni una vez.
+      - name: Ver si la variante de prueba se puede entregar
+        id: prueba
+        if: always()
+        run: |
+          if [ -f salida/recorrido.txt ]              && grep -q "== 20\." salida/recorrido.txt              && ! grep -q "HUBO CAIDAS" salida/recorrido.txt; then
+            mkdir -p prueba
+            cp app/build/outputs/apk/debug/app-debug.apk prueba/alex-tv-prueba.apk
+            echo "lista=si" >> "$GITHUB_OUTPUT"
+            echo "La variante de prueba se publica."
+          else
+            echo "La variante de prueba NO se publica: el recorrido no termino limpio."
+          fi
+
+      - name: Publicar la variante de prueba
+        if: always() && steps.prueba.outputs.lista == 'si'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: prueba
+          name: ALEX TV de prueba
+          body: |
+            La variante de prueba de ALEX TV. Se instala al lado de la app de siempre, como "ALEX TV prueba", sin desinstalar nada.
+            No es la version publicada: es lo ultimo de la rama de desarrollo que paso el recorrido en el emulador.
+          prerelease: true
+          files: prueba/alex-tv-prueba.apk
+
+      - name: Limpiar la prueba anterior
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete emulador --yes --cleanup-tag --repo "${{ github.repository }}" || true
+
+      - name: Publicar donde se pueda ver
+        if: always()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: emulador
+          name: Prueba en emulador de la rama de desarrollo
+          body: Recorrido automatico de la app en un emulador de televisor. No es una version de la app.
+          prerelease: true
+          files: salida/*

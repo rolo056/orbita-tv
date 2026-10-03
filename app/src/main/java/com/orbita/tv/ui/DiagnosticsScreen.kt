@@ -71,7 +71,14 @@ fun DiagnosticsScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 SectionTitle("CONCLUSIÓN")
-                Text(report.verdict, color = Tint.accent, fontSize = 19.sp, fontWeight = FontWeight.SemiBold)
+                // La conclusion lleva el color de lo peor que se encontro. Con
+                // el acento fijo, un "todo en orden" salia en rojo.
+                val tono = when {
+                    report.findings.any { it.level == Level.FAIL } -> Tint.fail
+                    report.findings.any { it.level == Level.WARN } -> Tint.warn
+                    else -> Tint.ok
+                }
+                Text(report.verdict, color = tono, fontSize = 19.sp, fontWeight = FontWeight.SemiBold)
                 report.advice.forEach { line ->
                     Text("· " + line, color = Tint.text, fontSize = 14.sp)
                 }
@@ -104,7 +111,7 @@ fun DiagnosticsScreen(
 }
 
 private fun color(level: Level): Color = when (level) {
-    Level.OK -> Tint.accent
+    Level.OK -> Tint.ok
     Level.WARN -> Tint.warn
     Level.FAIL -> Tint.fail
     Level.INFO -> Tint.textSoft

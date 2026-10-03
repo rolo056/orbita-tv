@@ -254,7 +254,7 @@ private fun Toggle(
             Spacer(Modifier.width(16.dp))
             Text(
                 if (value) "activado" else "apagado",
-                color = if (value) Tint.accent else Tint.textSoft,
+                color = if (value) Tint.ok else Tint.textSoft,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
             )

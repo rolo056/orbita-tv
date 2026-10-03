@@ -9,6 +9,7 @@
   "acento": "#FF563C",
   "aviso": "#E8B04A",
   "falla": "#E86BB0",
+  "bien": "#74C69D",
   "_forma": "esquinas y grosores en dp. escalaFoco agranda la fila enfocada: 1 la deja igual, 1.04 se nota sin marear.",
   "esquinas": 0,
   "grosorFoco": 4,

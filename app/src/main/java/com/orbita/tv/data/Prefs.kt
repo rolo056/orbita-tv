@@ -33,6 +33,7 @@ object Prefs {
     private val kSkinUrl = stringPreferencesKey("skinUrl")
     private val kLiveDesign = booleanPreferencesKey("liveDesign")
     private val kFavoritos = stringPreferencesKey("favoritos")
+    private val kBiblioteca = stringPreferencesKey("biblioteca")
 
     @Volatile
     var snapshot: AppSettings = AppSettings()
@@ -95,4 +96,12 @@ object Prefs {
     }
 
     suspend fun clear(ctx: Context) = save(ctx, AppSettings())
+
+    /** Peliculas y series a medias, y las favoritas. Va aparte de los ajustes. */
+    suspend fun loadLibrary(ctx: Context): Biblioteca =
+        Biblioteca.deJson(ctx.store.data.first()[kBiblioteca])
+
+    suspend fun saveLibrary(ctx: Context, b: Biblioteca) {
+        ctx.store.edit { p -> p[kBiblioteca] = b.aJson() }
+    }
 }

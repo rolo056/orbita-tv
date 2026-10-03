@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- El cartel de la variante de prueba: el mismo, con un resplandor ambar en el
+     borde de abajo. En el inicio del televisor los carteles no llevan nombre, y
+     dos iguales no se distinguen.
+
+     Es un degradado y no una franja a proposito: asi se mide en fracciones del
+     alto, y queda igual lo dibuje el lanzador al tamano que lo dibuje y en
+     cualquier version de Android. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/tv_banner_base" />
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:centerColor="#00E8B04A"
+                android:centerY="0.2"
+                android:endColor="#00E8B04A"
+                android:startColor="#FFE8B04A" />
+        </shape>
+    </item>
+</layer-list>
