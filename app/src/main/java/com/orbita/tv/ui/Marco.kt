@@ -151,17 +151,17 @@ fun Pestanas(
 }
 
 /**
- * La barra de la izquierda: la marca, las categorias y, abajo, el diagnostico y
- * los ajustes. Es la misma en canales, peliculas y series: quien la usa solo
- * pone las filas.
+ * La barra de la izquierda: la marca y las categorias. Es la misma en canales,
+ * peliculas y series: quien la usa solo pone las filas.
+ *
+ * Dentro de una seccion no hay nada que no sea de esa seccion. El diagnostico,
+ * los ajustes y el aviso de version nueva estan solo en el inicio: asi lo pidio
+ * el dueño, y asi la lista de categorias llega hasta abajo.
  */
 @Composable
 fun BarraLateral(
     ancho: Dp,
-    onDiagnostics: () -> Unit,
-    onSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    arriba: @Composable () -> Unit = {},
     categorias: LazyListScope.() -> Unit,
 ) {
     val skin = Tint.skin
@@ -172,36 +172,19 @@ fun BarraLateral(
         BrandMark(size = 22.sp)
         Spacer(Modifier.height(6.dp))
         SectionTitle("CATEGORÍAS", maxLines = 1)
-        arriba()
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(skin.gap.dp * 0.6f),
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
             content = categorias,
         )
-        Spacer(Modifier.height(skin.gap.dp))
-        FocusRow(onClick = onDiagnostics, modifier = Modifier.fillMaxWidth()) {
-            TextoQueCabe(
-                listOf("Diagnóstico de red", "Diagnóstico", "Red"),
-                color = Tint.text,
-                fontSize = 15.sp,
-            )
-        }
-        FocusRow(onClick = onSettings, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                "Ajustes",
-                color = Tint.text,
-                fontSize = 15.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
     }
 }
 
 /**
- * Lo de arriba en una pantalla angosta (un telefono parado): la marca, la hora,
- * los dos botones y, si hay mas de una, las secciones.
+ * Lo de arriba en una pantalla angosta (un telefono parado): la marca, la hora
+ * y, si hay mas de una, las secciones. Como en la barra lateral, el diagnostico
+ * y los ajustes quedan en el inicio.
  */
 @Composable
 fun CabeceraCompacta(
@@ -209,8 +192,6 @@ fun CabeceraCompacta(
     seccion: Seccion,
     secciones: List<Seccion>,
     onSeccion: (Seccion) -> Unit,
-    onDiagnostics: () -> Unit,
-    onSettings: () -> Unit,
 ) {
     val skin = Tint.skin
     Row(
@@ -219,18 +200,7 @@ fun CabeceraCompacta(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         BrandMark(size = 18.sp)
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(hora, color = Tint.textSoft, fontSize = 14.sp, maxLines = 1, softWrap = false)
-            FocusRow(onClick = onDiagnostics) {
-                Text("Red", color = Tint.text, fontSize = 14.sp, maxLines = 1, softWrap = false)
-            }
-            FocusRow(onClick = onSettings) {
-                Text("Ajustes", color = Tint.text, fontSize = 14.sp, maxLines = 1, softWrap = false)
-            }
-        }
+        Text(hora, color = Tint.textSoft, fontSize = 14.sp, maxLines = 1, softWrap = false)
     }
     Spacer(Modifier.height(skin.gap.dp))
     if (secciones.size > 1) {

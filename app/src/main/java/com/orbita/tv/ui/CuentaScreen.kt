@@ -2,12 +2,14 @@ package com.orbita.tv.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -61,102 +63,116 @@ fun CuentaScreen(
     }
 
     val activa = estado?.status?.equals("Active", ignoreCase = true) == true
+    // "Actualizar" es solo la version nueva de la app, y esa vive en el inicio.
+    // Este boton vuelve a preguntarle al panel por la cuenta.
+    val consultar = if (cargando) "Consultando…" else "Consultar de nuevo"
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 44.dp, vertical = 30.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Dibujo(Icono.CUENTA, Modifier.size(34.dp))
-            Spacer(Modifier.width(14.dp))
-            Text("Mi cuenta", color = Tint.text, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-        }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // En un telefono parado no caben el nombre y el dato en una fila, ni los
+        // botones uno al lado del otro: ahi va todo apilado. Antes el dato se
+        // partia ("2 de / diciembre", sin el año) y Volver quedaba fuera.
+        val angosta = maxWidth < 600.dp
 
-        PanelCristal(
-            Modifier.widthIn(max = 680.dp).fillMaxWidth(),
-            radio = 26.dp,
-            padding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
-            arreglo = Arrangement.spacedBy(14.dp),
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    horizontal = if (angosta) 20.dp else 44.dp,
+                    vertical = if (angosta) 22.dp else 30.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            Fila("Usuario", usuario)
-            Fila("Servidor", servidor)
-            Fila(
-                "Estado",
-                when {
-                    estado == null && cargando -> "Consultando…"
-                    estado == null -> "Sin datos"
-                    else -> estadoLegible(estado.status)
-                },
-                color = when {
-                    estado == null -> Tint.textSoft
-                    activa -> Tint.ok
-                    else -> Tint.fail
-                },
-            )
-            Fila("Vence", estado?.let { venceLegible(it.expires) } ?: "—")
-            Fila(
-                "Conexiones",
-                if (estado == null) {
-                    "—"
-                } else {
-                    estado.activeConnections.toString() + " en uso de " +
-                        estado.maxConnections + " permitidas"
-                },
-            )
-        }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Dibujo(Icono.CUENTA, Modifier.size(34.dp))
+                Spacer(Modifier.width(14.dp))
+                Text("Mi cuenta", color = Tint.text, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+            }
 
-        if (error != null) Text(error, color = Tint.fail, fontSize = 14.sp)
-
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            BotonCristal(
-                onClick = onActualizar,
-                modifier = Modifier.focusRequester(foco),
-                radio = 40.dp,
-                padding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
-                alineacion = Alignment.Center,
+            PanelCristal(
+                Modifier.widthIn(max = 680.dp).fillMaxWidth(),
+                radio = 26.dp,
+                padding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
+                arreglo = Arrangement.spacedBy(14.dp),
             ) {
-                Text(
-                    if (cargando) "Consultando…" else "Actualizar",
-                    color = Tint.text,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    softWrap = false,
+                Fila("Usuario", usuario, angosta)
+                Fila("Servidor", servidor, angosta)
+                Fila(
+                    "Estado",
+                    when {
+                        estado == null && cargando -> "Consultando…"
+                        estado == null -> "Sin datos"
+                        else -> estadoLegible(estado.status)
+                    },
+                    angosta,
+                    color = when {
+                        estado == null -> Tint.textSoft
+                        activa -> Tint.ok
+                        else -> Tint.fail
+                    },
+                )
+                Fila("Vence", estado?.let { venceLegible(it.expires) } ?: "—", angosta)
+                Fila(
+                    "Conexiones",
+                    if (estado == null) {
+                        "—"
+                    } else {
+                        estado.activeConnections.toString() + " en uso de " +
+                            estado.maxConnections + " permitidas"
+                    },
+                    angosta,
                 )
             }
-            BotonCristal(
-                onClick = onCambiarCuenta,
-                radio = 40.dp,
-                padding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
-                alineacion = Alignment.Center,
-            ) {
-                Text("Cambiar de cuenta", color = Tint.text, fontSize = 16.sp, fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false)
-            }
-            if (!esTv) {
-                BotonCristal(
-                    onClick = onSalir,
-                    radio = 40.dp,
-                    padding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
-                    alineacion = Alignment.Center,
-                ) {
-                    Text("Volver", color = Tint.text, fontSize = 16.sp, maxLines = 1, softWrap = false)
+
+            if (error != null) Text(error, color = Tint.fail, fontSize = 14.sp)
+
+            if (angosta) {
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    BotonCuenta(consultar, onActualizar, Modifier.fillMaxWidth().focusRequester(foco))
+                    BotonCuenta("Cambiar de cuenta", onCambiarCuenta, Modifier.fillMaxWidth())
+                    if (!esTv) BotonCuenta("Volver", onSalir, Modifier.fillMaxWidth())
+                }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    BotonCuenta(consultar, onActualizar, Modifier.focusRequester(foco))
+                    BotonCuenta("Cambiar de cuenta", onCambiarCuenta)
+                    if (!esTv) BotonCuenta("Volver", onSalir)
                 }
             }
-        }
 
-        Hint(
-            "Las conexiones son los aparatos que pueden estar viendo algo a la vez con esta " +
-                "cuenta. Recorrer los menús no ocupa ninguna; un canal o una película sí, " +
-                "mientras se reproduce."
-        )
+            Hint(
+                "Las conexiones son los aparatos que pueden estar viendo algo a la vez con esta " +
+                    "cuenta. Recorrer los menús no ocupa ninguna; un canal o una película sí, " +
+                    "mientras se reproduce."
+            )
+        }
     }
 }
 
 @Composable
-private fun Fila(nombre: String, valor: String, color: Color = Tint.text) {
+private fun BotonCuenta(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    BotonCristal(
+        onClick = onClick,
+        modifier = modifier,
+        radio = 40.dp,
+        padding = PaddingValues(horizontal = 22.dp, vertical = 12.dp),
+        alineacion = Alignment.Center,
+    ) {
+        Text(texto, color = Tint.text, fontSize = 16.sp, fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false)
+    }
+}
+
+/** Un dato de la cuenta: el nombre a la izquierda o, si no hay ancho, arriba. */
+@Composable
+private fun Fila(nombre: String, valor: String, apilada: Boolean, color: Color = Tint.text) {
+    if (apilada) {
+        Column(Modifier.fillMaxWidth()) {
+            Text(nombre, color = Tint.textSoft, fontSize = 14.sp, maxLines = 1)
+            Spacer(Modifier.height(2.dp))
+            Text(valor, color = color, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, maxLines = 2)
+        }
+        return
+    }
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(nombre, color = Tint.textSoft, fontSize = 16.sp, modifier = Modifier.width(150.dp), maxLines = 1)
         Text(

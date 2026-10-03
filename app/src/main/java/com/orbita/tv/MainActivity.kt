@@ -199,7 +199,6 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
 
     var funcion by remember { mutableStateOf<Funcion?>(null) }
     var volverDeCine by remember { mutableStateOf(Screen.HOME) }
-    var volverDeAjustes by remember { mutableStateOf(Screen.INICIO) }
     var ultimaBaldosa by remember { mutableStateOf("vivo") }
 
     // Lo que el panel dice de la cuenta: vencimiento y conexiones. Se muestra en
@@ -743,7 +742,6 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
             },
             onAjustes = {
                 ultimaBaldosa = "ajustes"
-                volverDeAjustes = Screen.INICIO
                 screen = Screen.SETTINGS
             },
             enfocar = ultimaBaldosa,
@@ -774,25 +772,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                 onPlay = { reproducir(it) },
                 onStop = { engine?.stop() },
                 onToggleFavorite = { alternarFavorito(it) },
-                onDiagnostics = { abrirDiagnostico(Screen.HOME) },
-                onSettings = {
-                    volverDeAjustes = Screen.HOME
-                    screen = Screen.SETTINGS
-                },
                 notice = aviso,
-                update = update,
-                updating = updating,
-                onUpdate = {
-                    val info = update
-                    if (info != null && !updating) {
-                        updating = true
-                        scope.launch {
-                            val file = Updater.download(ctx, info, settings.net)
-                            updating = false
-                            if (file != null) Updater.install(ctx, file)
-                        }
-                    }
-                },
                 seccion = seccion,
                 secciones = listOf(seccion),
                 onSeccion = {},
@@ -820,11 +800,6 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                     biblioteca = biblioteca.alternarFavorita(Guardado(false, t.id, t.titulo, t.imagen, ext))
                     guardarBiblioteca()
                 },
-                onDiagnostics = { abrirDiagnostico(Screen.HOME) },
-                onSettings = {
-                    volverDeAjustes = Screen.HOME
-                    screen = Screen.SETTINGS
-                },
             )
 
             Seccion.SERIES -> CatalogoScreen(
@@ -845,11 +820,6 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                 onFavorita = { t ->
                     biblioteca = biblioteca.alternarFavorita(Guardado(true, t.id, t.titulo, t.imagen))
                     guardarBiblioteca()
-                },
-                onDiagnostics = { abrirDiagnostico(Screen.HOME) },
-                onSettings = {
-                    volverDeAjustes = Screen.HOME
-                    screen = Screen.SETTINGS
                 },
             )
         }
@@ -989,7 +959,8 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
                     screen = Screen.LOGIN
                 }
             },
-            onExit = { screen = volverDeAjustes },
+            // Ajustes se abre solo desde el inicio, y ahi vuelve.
+            onExit = { screen = Screen.INICIO },
         )
     }
 }
