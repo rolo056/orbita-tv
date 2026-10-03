@@ -664,6 +664,9 @@ private fun Lista(
         else -> LazyColumn(
             state = estado,
             verticalArrangement = Arrangement.spacedBy(skin.gap.dp),
+            // Aire para el halo y el leve agrandado del foco: sin esto, la
+            // primera y la ultima fila quedan cortadas contra el borde.
+            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
         ) {
             itemsIndexed(visibles, key = { _, c -> c.streamId }) { i, c ->
                 val actual = enVentana?.streamId == c.streamId

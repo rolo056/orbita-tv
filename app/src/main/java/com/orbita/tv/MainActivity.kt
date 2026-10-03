@@ -200,6 +200,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
     var funcion by remember { mutableStateOf<Funcion?>(null) }
     var volverDeCine by remember { mutableStateOf(Screen.HOME) }
     var volverDeAjustes by remember { mutableStateOf(Screen.INICIO) }
+    var ultimaBaldosa by remember { mutableStateOf("vivo") }
 
     // Lo que el panel dice de la cuenta: vencimiento y conexiones. Se muestra en
     // la pantalla de inicio y en Mi cuenta.
@@ -713,30 +714,39 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
             updating = updating,
             onUpdate = { actualizar() },
             onVivo = {
+                ultimaBaldosa = "vivo"
                 seccion = Seccion.EN_VIVO
                 screen = Screen.HOME
             },
             onPeliculas = {
                 if (hayPeliculas()) {
+                    ultimaBaldosa = "peliculas"
                     irASeccion(Seccion.PELICULAS)
                     screen = Screen.HOME
                 }
             },
             onSeries = {
                 if (haySeries()) {
+                    ultimaBaldosa = "series"
                     irASeccion(Seccion.SERIES)
                     screen = Screen.HOME
                 }
             },
             onCuenta = {
+                ultimaBaldosa = "cuenta"
                 consultarCuenta()
                 screen = Screen.CUENTA
             },
-            onDiagnostico = { abrirDiagnostico(Screen.INICIO) },
+            onDiagnostico = {
+                ultimaBaldosa = "diagnostico"
+                abrirDiagnostico(Screen.INICIO)
+            },
             onAjustes = {
+                ultimaBaldosa = "ajustes"
                 volverDeAjustes = Screen.INICIO
                 screen = Screen.SETTINGS
             },
+            enfocar = ultimaBaldosa,
         )
 
         Screen.CUENTA -> CuentaScreen(

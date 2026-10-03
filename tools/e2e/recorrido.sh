@@ -157,8 +157,9 @@ teclas 8 $OK
 foto tras-ok-en-peliculas
 textos
 
-paso "7b. Atras, abajo y OK: Mi cuenta"
+paso "7b. Atras: el foco vuelve a Peliculas. Abajo y OK: Mi cuenta"
 teclas 3 $ATRAS
+foco
 teclas 1 $ABAJO
 foco
 teclas 4 $OK

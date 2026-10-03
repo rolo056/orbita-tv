@@ -292,7 +292,7 @@ fun FichaSerieScreen(
                         LazyColumn(
                             state = estadoLista,
                             verticalArrangement = Arrangement.spacedBy(Tint.skin.gap.dp),
-                            contentPadding = PaddingValues(vertical = 4.dp),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
                         ) {
                             itemsIndexed(episodios, key = { _, e -> e.id }) { _, e ->
                                 val av = biblioteca.avanceDeEpisodio(e.id)

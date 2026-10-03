@@ -176,6 +176,7 @@ fun BarraLateral(
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(skin.gap.dp * 0.6f),
             modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
             content = categorias,
         )
         Spacer(Modifier.height(skin.gap.dp))

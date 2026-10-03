@@ -64,17 +64,23 @@ fun InicioScreen(
     onCuenta: () -> Unit,
     onDiagnostico: () -> Unit,
     onAjustes: () -> Unit,
+    /** La baldosa que recibe el foco: la ultima que se abrio, para volver a ella. */
+    enfocar: String = "vivo",
 ) {
     val esTv = isTvDevice()
     val hora = relojEnVivo()
     val fecha = remember(hora) { fechaDeHoy() }
 
-    // Con mando, al llegar ya esta parado en la television en vivo.
-    val focoVivo = remember { FocusRequester() }
+    // Con mando, al llegar ya esta parado en algo: la primera vez en la
+    // television en vivo, y al volver, en la baldosa de donde se vino.
+    val focos = remember {
+        listOf("vivo", "peliculas", "series", "cuenta", "diagnostico", "ajustes")
+            .associateWith { FocusRequester() }
+    }
     LaunchedEffect(esTv) {
         if (!esTv) return@LaunchedEffect
         withFrameNanos { }
-        runCatching { focoVivo.requestFocus() }
+        runCatching { (focos[enfocar] ?: focos.getValue("vivo")).requestFocus() }
     }
 
     val tintePeliculas = Tint.warn
@@ -97,25 +103,25 @@ fun InicioScreen(
                 if (update != null) Actualizar(update, updating, onUpdate, Modifier.fillMaxWidth())
                 Baldosa(
                     Icono.TV, "TV en vivo", subVivo, onVivo,
-                    Modifier.fillMaxWidth().height(170.dp).focusRequester(focoVivo),
+                    Modifier.fillMaxWidth().height(170.dp).focusRequester(focos.getValue("vivo")),
                     icono = 52.dp, titulo = 24.sp, radio = 30.dp, tinte = Tint.accent,
                 )
                 Row(Modifier.fillMaxWidth().height(132.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     Baldosa(
                         Icono.PELICULA, "Películas", subPeliculas, onPeliculas,
-                        Modifier.weight(1f).fillMaxHeight(),
+                        Modifier.weight(1f).fillMaxHeight().focusRequester(focos.getValue("peliculas")),
                         icono = 36.dp, titulo = 18.sp, radio = 26.dp, tinte = tintePeliculas,
                     )
                     Baldosa(
                         Icono.SERIE, "Series", subSeries, onSeries,
-                        Modifier.weight(1f).fillMaxHeight(),
+                        Modifier.weight(1f).fillMaxHeight().focusRequester(focos.getValue("series")),
                         icono = 36.dp, titulo = 18.sp, radio = 26.dp, tinte = tinteSeries,
                     )
                 }
                 Row(Modifier.fillMaxWidth().height(84.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    BaldosaChica(Icono.CUENTA, "Cuenta", onCuenta, apilada = true)
-                    BaldosaChica(Icono.RED, "Red", onDiagnostico, apilada = true)
-                    BaldosaChica(Icono.AJUSTES, "Ajustes", onAjustes, apilada = true)
+                    BaldosaChica(Icono.CUENTA, "Cuenta", onCuenta, focos.getValue("cuenta"), apilada = true)
+                    BaldosaChica(Icono.RED, "Red", onDiagnostico, focos.getValue("diagnostico"), apilada = true)
+                    BaldosaChica(Icono.AJUSTES, "Ajustes", onAjustes, focos.getValue("ajustes"), apilada = true)
                 }
                 Spacer(Modifier.height(4.dp))
                 Dato("Vence", vence ?: "—")
@@ -154,7 +160,7 @@ fun InicioScreen(
             ) {
                 Baldosa(
                     Icono.TV, "TV en vivo", subVivo, onVivo,
-                    Modifier.weight(1f).fillMaxHeight().focusRequester(focoVivo),
+                    Modifier.weight(1f).fillMaxHeight().focusRequester(focos.getValue("vivo")),
                     icono = 64.dp, titulo = 26.sp, radio = 32.dp, tinte = Tint.accent,
                 )
                 Column(
@@ -167,12 +173,12 @@ fun InicioScreen(
                     ) {
                         Baldosa(
                             Icono.PELICULA, "Películas", subPeliculas, onPeliculas,
-                            Modifier.weight(1f).fillMaxHeight(),
+                            Modifier.weight(1f).fillMaxHeight().focusRequester(focos.getValue("peliculas")),
                             icono = 44.dp, titulo = 22.sp, radio = 28.dp, tinte = tintePeliculas,
                         )
                         Baldosa(
                             Icono.SERIE, "Series", subSeries, onSeries,
-                            Modifier.weight(1f).fillMaxHeight(),
+                            Modifier.weight(1f).fillMaxHeight().focusRequester(focos.getValue("series")),
                             icono = 44.dp, titulo = 22.sp, radio = 28.dp, tinte = tinteSeries,
                         )
                     }
@@ -180,9 +186,9 @@ fun InicioScreen(
                         Modifier.weight(1f).fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(18.dp),
                     ) {
-                        BaldosaChica(Icono.CUENTA, "Mi cuenta", onCuenta)
-                        BaldosaChica(Icono.RED, "Diagnóstico", onDiagnostico)
-                        BaldosaChica(Icono.AJUSTES, "Ajustes", onAjustes)
+                        BaldosaChica(Icono.CUENTA, "Mi cuenta", onCuenta, focos.getValue("cuenta"))
+                        BaldosaChica(Icono.RED, "Diagnóstico", onDiagnostico, focos.getValue("diagnostico"))
+                        BaldosaChica(Icono.AJUSTES, "Ajustes", onAjustes, focos.getValue("ajustes"))
                     }
                 }
             }
@@ -256,10 +262,16 @@ private fun Baldosa(
  * ancho (un telefono parado), el icono arriba del nombre.
  */
 @Composable
-private fun RowScope.BaldosaChica(icono: Icono, texto: String, onClick: () -> Unit, apilada: Boolean = false) {
+private fun RowScope.BaldosaChica(
+    icono: Icono,
+    texto: String,
+    onClick: () -> Unit,
+    foco: FocusRequester,
+    apilada: Boolean = false,
+) {
     BotonCristal(
         onClick = onClick,
-        modifier = Modifier.weight(1f).fillMaxHeight(),
+        modifier = Modifier.weight(1f).fillMaxHeight().focusRequester(foco),
         radio = 22.dp,
         padding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
         alineacion = Alignment.Center,
