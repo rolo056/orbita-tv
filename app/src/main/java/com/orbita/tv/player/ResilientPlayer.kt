@@ -13,11 +13,9 @@ import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
-import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory
 import com.orbita.tv.data.AppSettings
 import com.orbita.tv.net.Http
@@ -224,12 +222,13 @@ class ResilientPlayer(
 
         // FLAG_ALLOW_NON_IDR_KEYFRAMES: los canales en vivo se enganchan a mitad
         // de GOP. Sin esto se ve audio sin imagen hasta el siguiente keyframe.
-        val extractors = DefaultExtractorsFactory()
-            .setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES)
-            .setTsExtractorTimestampSearchBytes(600 * 188)
-
-        val mediaSourceFactory = DefaultMediaSourceFactory(httpFactory, extractors)
-            .setLoadErrorHandlingPolicy(StubbornPolicy())
+        // FuenteDeCanal (Entrelazados.kt): HLS o TS como siempre, pero sin tirar
+        // la mitad de la imagen de los canales entrelazados por campos.
+        val mediaSourceFactory = FuenteDeCanal(
+            httpFactory,
+            DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES,
+            600 * 188,
+        ).setLoadErrorHandlingPolicy(StubbornPolicy())
 
         return ExoPlayer.Builder(context)
             .setLoadControl(loadControl)

@@ -8,12 +8,19 @@ import androidx.media3.common.Tracks
 import com.orbita.tv.player.describirImagen
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * Lo que el detalle tecnico dice de la imagen de un canal. Es la pista para los
  * canales que se oyen bien y se ven con bloques verdes: si el formato es uno que
  * el aparato no maneja, tiene que decirlo con todas las letras.
+ *
+ * Con Robolectric porque Media3 usa TextUtils de Android al armar las pistas.
  */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class ImagenTest {
 
     private fun pistas(formato: Format, soporte: Int): Tracks = Tracks(
