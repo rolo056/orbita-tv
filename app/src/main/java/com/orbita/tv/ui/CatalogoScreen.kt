@@ -24,7 +24,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -125,6 +128,29 @@ fun CatalogoScreen(
         runCatching { if (vuelve) focoTarjeta.requestFocus() else focoPrimera.requestFocus() }
     }
 
+    // Elegir una categoria con OK lleva a su primera portada, en cuanto llega:
+    // la lista se pide al panel y puede tardar. Igual que en los canales.
+    var irA by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(irA, abierta, cargando, tarjetas) {
+        val pedida = irA ?: return@LaunchedEffect
+        if (!esTv) {
+            irA = null
+            return@LaunchedEffect
+        }
+        if (abierta != pedida || cargando) return@LaunchedEffect
+        if (tarjetas.isNotEmpty()) {
+            withFrameNanos { }
+            runCatching { focoPrimera.requestFocus() }
+        }
+        // Despues de enfocar: irA es clave de este efecto, y cambiarla antes lo
+        // cancelaria a mitad de camino.
+        irA = null
+    }
+    val elegir: (String) -> Unit = { id ->
+        irA = id
+        onCategoria(id)
+    }
+
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val compacto = maxWidth < 600.dp
         val pad: Dp = if (compacto) (skin.screenPad * 0.4f).dp else skin.screenPad.dp
@@ -133,9 +159,9 @@ fun CatalogoScreen(
             Column(Modifier.fillMaxSize().padding(pad)) {
                 CabeceraCompacta(hora, seccion, secciones, onSeccion)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (haySeguir) item { Chip("Seguir viendo", abierta == CAT_SEGUIR) { onCategoria(CAT_SEGUIR) } }
-                    if (hayFavoritas) item { Chip("Favoritas", abierta == CAT_FAVORITOS) { onCategoria(CAT_FAVORITOS) } }
-                    items(categorias) { c -> Chip(c.name, abierta == c.id) { onCategoria(c.id) } }
+                    if (haySeguir) item { Chip("Seguir viendo", abierta == CAT_SEGUIR) { elegir(CAT_SEGUIR) } }
+                    if (hayFavoritas) item { Chip("Favoritas", abierta == CAT_FAVORITOS) { elegir(CAT_FAVORITOS) } }
+                    items(categorias) { c -> Chip(c.name, abierta == c.id) { elegir(c.id) } }
                 }
                 Spacer(Modifier.height(skin.gap.dp))
                 Grilla(
@@ -151,17 +177,17 @@ fun CatalogoScreen(
         Row(Modifier.fillMaxSize().padding(pad)) {
             BarraLateral(ancho = lateral) {
                 if (haySeguir) {
-                    item { FilaCategoria("Seguir viendo", null, abierta == CAT_SEGUIR) { onCategoria(CAT_SEGUIR) } }
+                    item { FilaCategoria("Seguir viendo", null, abierta == CAT_SEGUIR) { elegir(CAT_SEGUIR) } }
                 }
                 if (hayFavoritas) {
                     item {
                         FilaCategoria(if (series) "Mis series" else "Mis películas", null, abierta == CAT_FAVORITOS) {
-                            onCategoria(CAT_FAVORITOS)
+                            elegir(CAT_FAVORITOS)
                         }
                     }
                 }
                 items(categorias) { c ->
-                    FilaCategoria(c.name, null, abierta == c.id) { onCategoria(c.id) }
+                    FilaCategoria(c.name, null, abierta == c.id) { elegir(c.id) }
                 }
             }
             Spacer(Modifier.width(pad))

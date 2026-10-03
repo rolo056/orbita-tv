@@ -132,12 +132,18 @@ paso "4. Abajo: canal siguiente, sin salir de la pantalla completa"
 teclas 10 $ABAJO
 foto canal-siguiente
 
+paso "4b. Derecha: el detalle tecnico, con el formato de la imagen y el decodificador"
+teclas 3 $DER
+foto detalle-tecnico
+textos
+teclas 2 $DER
+
 paso "5. Atras: de vuelta en la lista, con el foco en el canal que se miraba"
 teclas 3 $ATRAS
 foto de-vuelta
 foco
 
-paso "6. Abajo, abajo, izquierda: a las categorias; OK elige una"
+paso "6. Abajo, abajo, izquierda: a las categorias; OK elige una y el foco va a su primer canal"
 teclas 1 $ABAJO
 teclas 1 $ABAJO
 foco
@@ -145,6 +151,7 @@ teclas 2 $IZQ
 foco
 teclas 3 $OK
 foto categoria
+foco
 textos
 
 paso "7. Atras: vuelve al inicio. Derecha y OK: Peliculas"
@@ -209,6 +216,14 @@ paso "15. Atras dos veces: el catalogo, con el foco en la misma portada"
 teclas 3 $ATRAS
 teclas 3 $ATRAS
 foto catalogo-de-vuelta
+foco
+
+paso "15b. Izquierda a las categorias, abajo y OK: el foco va a la primera portada de esa categoria"
+teclas 2 $IZQ
+teclas 2 $ABAJO
+foco
+teclas 8 $OK
+foto otra-categoria
 foco
 
 # --------------------------------------------------------------------- series

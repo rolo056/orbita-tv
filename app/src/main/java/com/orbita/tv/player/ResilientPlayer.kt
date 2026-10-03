@@ -2,13 +2,17 @@ package com.orbita.tv.player
 
 import android.content.Context
 import androidx.media3.common.C
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
@@ -24,6 +28,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /** Lo que se ve en el HUD y lo que explica por que se cayo el canal. */
 data class PlaybackStats(
@@ -43,7 +48,67 @@ data class PlaybackStats(
      * para no dejar nunca una imagen congelada sin una palabra que la explique.
      */
     val onAir: Boolean = false,
+    /** La imagen del canal: codec, perfil, tamaño y si el aparato dice poder con ella. */
+    val imagen: String = "",
+    /** El decodificador de video del aparato que la esta dibujando. */
+    val decodificador: String = "",
+    val cuadrosPerdidos: Int = 0,
 )
+
+/**
+ * La imagen del canal en palabras, para el detalle tecnico.
+ *
+ * Existe por los canales que se oyen bien y se ven con bloques verdes. Eso casi
+ * nunca es la red: es una imagen en un formato que el decodificador del aparato
+ * no maneja (H.264 4:2:2 o de 10 bits, comun en señales tomadas de satelite),
+ * y el reproductor la intenta igual. Aca se ve el formato y si el aparato
+ * declara poder con el.
+ */
+internal fun describirImagen(tracks: Tracks): String {
+    val grupo = tracks.groups.firstOrNull { it.type == C.TRACK_TYPE_VIDEO } ?: return "sin imagen"
+    val i = (0 until grupo.length).firstOrNull { grupo.isTrackSelected(it) } ?: 0
+    val f = grupo.getTrackFormat(i)
+    val partes = mutableListOf(nombreDeCodec(f))
+    if (f.width > 0 && f.height > 0) partes += "${f.width}x${f.height}"
+    if (f.frameRate > 0) partes += "${f.frameRate.roundToInt()} fps"
+    partes += if (grupo.getTrackSupport(i) == C.FORMAT_HANDLED) "el aparato puede" else "EL APARATO NO PUEDE"
+    return partes.joinToString(" · ")
+}
+
+private fun nombreDeCodec(f: Format): String {
+    val codecs = f.codecs ?: ""
+    return when (f.sampleMimeType) {
+        MimeTypes.VIDEO_H264 -> "H.264" + perfilH264(codecs)
+        MimeTypes.VIDEO_H265 -> "H.265" + perfilH265(codecs)
+        MimeTypes.VIDEO_MPEG2 -> "MPEG-2"
+        else -> f.sampleMimeType ?: "formato desconocido"
+    }
+}
+
+/** "avc1.7A0028": los dos primeros digitos, en hexadecimal, son el perfil. */
+private fun perfilH264(codecs: String): String {
+    val perfil = codecs.substringAfter('.', "").take(2).toIntOrNull(16) ?: return ""
+    return when (perfil) {
+        66 -> " Baseline"
+        77 -> " Main"
+        88 -> " Extended"
+        100 -> " High"
+        110 -> " High 10 bits"
+        122 -> " High 4:2:2"
+        244 -> " High 4:4:4"
+        else -> " perfil $perfil"
+    }
+}
+
+/** "hvc1.2.4.L153.B0": el segundo campo es el perfil, con una letra opcional delante. */
+private fun perfilH265(codecs: String): String {
+    val perfil = codecs.split('.').getOrNull(1)?.trimStart('A', 'B', 'C')?.toIntOrNull() ?: return ""
+    return when (perfil) {
+        1 -> " Main"
+        2 -> " Main 10 bits"
+        else -> " perfil $perfil"
+    }
+}
 
 /**
  * ExoPlayer con la logica que le falta a cualquier reproductor generico en un
@@ -116,6 +181,28 @@ class ResilientPlayer(
                     // quieta. Todavia no es una falla, pero se dice.
                     _stats.value = _stats.value.copy(status = "Esperando datos", onAir = false)
                 }
+            }
+
+            override fun onTracksChanged(tracks: Tracks) {
+                _stats.value = _stats.value.copy(imagen = describirImagen(tracks))
+            }
+        })
+        player.addAnalyticsListener(object : AnalyticsListener {
+            override fun onVideoDecoderInitialized(
+                eventTime: AnalyticsListener.EventTime,
+                decoderName: String,
+                initializedTimestampMs: Long,
+                initializationDurationMs: Long,
+            ) {
+                _stats.value = _stats.value.copy(decodificador = decoderName)
+            }
+
+            override fun onDroppedVideoFrames(
+                eventTime: AnalyticsListener.EventTime,
+                droppedFrames: Int,
+                elapsedMs: Long,
+            ) {
+                _stats.value = _stats.value.copy(cuadrosPerdidos = _stats.value.cuadrosPerdidos + droppedFrames)
             }
         })
         startWatchdog()
@@ -192,7 +279,13 @@ class ResilientPlayer(
         hardened = false
         ladderRounds = 0
         resetWatchdog()
-        _stats.value = PlaybackStats(channelName = channelName, reconnects = 0)
+        // El decodificador se reusa entre canales del mismo formato, y entonces
+        // no se vuelve a anunciar: se conserva el que habia.
+        _stats.value = PlaybackStats(
+            channelName = channelName,
+            reconnects = 0,
+            decodificador = _stats.value.decodificador,
+        )
         load("Conectando")
     }
 
