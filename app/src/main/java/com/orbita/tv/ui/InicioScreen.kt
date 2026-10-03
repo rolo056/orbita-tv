@@ -112,10 +112,10 @@ fun InicioScreen(
                         icono = 36.dp, titulo = 18.sp, radio = 26.dp, tinte = tinteSeries,
                     )
                 }
-                Row(Modifier.fillMaxWidth().height(60.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    BaldosaChica(Icono.CUENTA, "Cuenta", onCuenta)
-                    BaldosaChica(Icono.RED, "Red", onDiagnostico)
-                    BaldosaChica(Icono.AJUSTES, "Ajustes", onAjustes)
+                Row(Modifier.fillMaxWidth().height(84.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    BaldosaChica(Icono.CUENTA, "Cuenta", onCuenta, apilada = true)
+                    BaldosaChica(Icono.RED, "Red", onDiagnostico, apilada = true)
+                    BaldosaChica(Icono.AJUSTES, "Ajustes", onAjustes, apilada = true)
                 }
                 Spacer(Modifier.height(4.dp))
                 Dato("Vence", vence ?: "—")
@@ -251,20 +251,21 @@ private fun Baldosa(
     }
 }
 
-/** Un boton chico de la fila de abajo: icono y nombre en una linea. */
+/**
+ * Un boton chico de la fila de abajo: icono y nombre en una linea o, si no hay
+ * ancho (un telefono parado), el icono arriba del nombre.
+ */
 @Composable
-private fun RowScope.BaldosaChica(icono: Icono, texto: String, onClick: () -> Unit) {
+private fun RowScope.BaldosaChica(icono: Icono, texto: String, onClick: () -> Unit, apilada: Boolean = false) {
     BotonCristal(
         onClick = onClick,
         modifier = Modifier.weight(1f).fillMaxHeight(),
         radio = 22.dp,
-        padding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        padding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
         alineacion = Alignment.Center,
         escalaFoco = 1.05f,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Dibujo(icono, Modifier.size(24.dp))
-            Spacer(Modifier.width(10.dp))
+        val nombre: @Composable () -> Unit = {
             Text(
                 texto,
                 color = Tint.text,
@@ -273,6 +274,19 @@ private fun RowScope.BaldosaChica(icono: Icono, texto: String, onClick: () -> Un
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+        if (apilada) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Dibujo(icono, Modifier.size(24.dp))
+                Spacer(Modifier.height(6.dp))
+                nombre()
+            }
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Dibujo(icono, Modifier.size(24.dp))
+                Spacer(Modifier.width(10.dp))
+                nombre()
+            }
         }
     }
 }

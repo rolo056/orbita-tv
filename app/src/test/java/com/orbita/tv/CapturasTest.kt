@@ -391,7 +391,7 @@ class CapturasTest {
     ) {
         CatalogoScreen(
             seccion = seccion,
-            secciones = todas,
+            secciones = listOf(seccion),
             onSeccion = {},
             categorias = generos,
             abierta = abierta,

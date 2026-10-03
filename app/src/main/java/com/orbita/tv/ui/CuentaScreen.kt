@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -69,7 +70,7 @@ fun CuentaScreen(
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Dibujo(Icono.CUENTA, Modifier.width(34.dp))
+            Dibujo(Icono.CUENTA, Modifier.size(34.dp))
             Spacer(Modifier.width(14.dp))
             Text("Mi cuenta", color = Tint.text, fontSize = 30.sp, fontWeight = FontWeight.Bold)
         }
