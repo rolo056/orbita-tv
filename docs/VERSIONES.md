@@ -8,7 +8,8 @@ desinstalar** la app del televisor ni a cargar de nuevo la cuenta.
 
 | Versión | Qué trae | Código guardado | Archivo de instalación |
 |---|---|---|---|
-| **1.0.30** | Canales entrelazados sin bloques verdes (no se tira la mitad del cuadro que llega sin hora); OK en una categoría lleva a su primer canal o portada; el detalle técnico muestra el formato de la imagen y el decodificador | rama `main` (fusión del 3/10/2026) | publicación `v1.0.30` |
+| **1.0.31** | Registro de fallas: cada vez que un canal o la lista fallan, el aparato anota la hora y cómo estaba su red (proveedor, IPv4, IPv6, wifi, memoria); se lee en Diagnóstico | rama `main` (fusión del 3/10/2026) | publicación `v1.0.31` |
+| **1.0.30** | Canales entrelazados sin bloques verdes (no se tira la mitad del cuadro que llega sin hora); OK en una categoría lleva a su primer canal o portada; el detalle técnico muestra el formato de la imagen y el decodificador | etiqueta `respaldo-1.0.30` (commit `df22294`) | publicación `v1.0.30` |
 | **1.0.29** | "Actualizar", Diagnóstico y Ajustes solo en la pantalla de inicio (ya no en TV en vivo, Películas ni Series); al pie del inicio, "Diseñada por: **Alexander Rosales**"; Mi cuenta se ve completa en el teléfono y su botón dice "Consultar de nuevo" | etiqueta `respaldo-1.0.29` (commit `c634c01`) | publicación `v1.0.29` |
 | **1.0.28** | Diseño nuevo: pantalla de inicio con TV en vivo, Películas y Series; botones de cristal con esquinas redondeadas; Mi cuenta | etiqueta `respaldo-1.0.28` (commit `12f7b9c`) | publicación `v1.0.28` |
 | **1.0.27** | Películas y series, con el diseño anterior | etiqueta `respaldo-1.0.27` (commit `a775470`) | publicación `v1.0.27` |
@@ -31,7 +32,7 @@ con un número **más nuevo**. La app lo ofrece como cualquier actualización, s
 instala encima y conserva todo lo guardado. Los datos son compatibles en las
 dos direcciones: cada versión ignora lo que no conoce.
 
-## Cómo volver a la 1.0.29 (si la 1.0.30 falla)
+## Cómo volver a la 1.0.30 (si la 1.0.31 falla)
 
 Desde la carpeta del proyecto:
 
@@ -39,20 +40,20 @@ Desde la carpeta del proyecto:
 git checkout main
 git pull
 git rm -r -q app
-git checkout respaldo-1.0.29 -- app tema.json
-git commit -m "Volver a la 1.0.29"
+git checkout respaldo-1.0.30 -- app tema.json
+git commit -m "Volver a la 1.0.30"
 git push origin main
 ```
 
 - `git rm` y `git checkout` dejan la carpeta `app` y la apariencia (`tema.json`)
-  **exactamente** como estaban en la 1.0.29, incluido quitar los archivos que
+  **exactamente** como estaban en la 1.0.30, incluido quitar los archivos que
   esa versión no tenía. Sin el `git rm`, podrían quedar archivos nuevos que no
   compilan con el código viejo.
 - Todo lo demás (la firma, la compilación, las herramientas) no cambió entre
-  estas versiones, así que el resultado es la 1.0.29 tal cual.
+  estas versiones, así que el resultado es la 1.0.30 tal cual.
 - GitHub la compila en unos cuatro minutos con el número siguiente (por ejemplo
-  1.0.31) y la publica en `ultima`.
-- En el televisor aparece "Actualizar a la 1.0.31" en la pantalla de inicio.
+  1.0.32) y la publica en `ultima`.
+- En el televisor aparece "Actualizar a la 1.0.32" en la pantalla de inicio.
   OK, instalar, y listo.
 
 Lo nuevo no se pierde: sigue en la rama `desarrollo`, para corregirlo y volver
@@ -64,6 +65,7 @@ Es lo mismo, cambiando la etiqueta y el mensaje:
 
 | Para volver a | Etiqueta |
 |---|---|
+| 1.0.29 (todo en el inicio, firma al pie; sin el arreglo de los canales entrelazados) | `respaldo-1.0.29` |
 | 1.0.28 (diseño de cristal, con Diagnóstico y Ajustes también en las secciones) | `respaldo-1.0.28` |
 | 1.0.27 (películas y series, diseño anterior) | `respaldo-1.0.27` |
 | 1.0.26 (solo canales) | `respaldo-1.0.26` |
@@ -80,9 +82,9 @@ git push origin main
 ```
 
 El procedimiento se ensayó antes de publicar cada versión, volviendo a la
-anterior: la 1.0.28 (a la 1.0.27), la 1.0.29 (a la 1.0.28) y la 1.0.30 (a la
-1.0.29). Las tres veces, `app` y `tema.json` quedaron idénticos a la versión
-de la etiqueta, sin restos de la nueva.
+anterior: la 1.0.28 (a la 1.0.27), la 1.0.29 (a la 1.0.28), la 1.0.30 (a la
+1.0.29) y la 1.0.31 (a la 1.0.30). Todas las veces, `app` y `tema.json`
+quedaron idénticos a la versión de la etiqueta, sin restos de la nueva.
 
 ## Si se cambia solo la apariencia
 
