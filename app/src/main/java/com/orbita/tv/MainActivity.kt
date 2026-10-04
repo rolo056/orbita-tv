@@ -35,7 +35,9 @@ import com.orbita.tv.data.PuntoDeSerie
 import com.orbita.tv.data.Skin
 import com.orbita.tv.diag.DiagReport
 import com.orbita.tv.diag.Diagnostics
+import com.orbita.tv.diag.Falla
 import com.orbita.tv.diag.Finding
+import com.orbita.tv.diag.Registro
 import com.orbita.tv.net.Category
 import com.orbita.tv.net.Channel
 import com.orbita.tv.net.Episode
@@ -174,6 +176,8 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
     val findings = remember { mutableStateListOf<Finding>() }
     var report by remember { mutableStateOf<DiagReport?>(null) }
     var diagRunning by remember { mutableStateOf(false) }
+    // Lo que el aparato anoto cada vez que algo fallo (diag/Registro.kt).
+    var fallas by remember { mutableStateOf<List<Falla>>(emptyList()) }
     var volverDeDiag by remember { mutableStateOf(Screen.HOME) }
 
     // ---- peliculas y series ----
@@ -337,6 +341,14 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
             }
         } finally {
             loading = false
+            // La lista que no carga tambien queda anotada, con la foto de la red
+            // de este aparato en ese momento.
+            error?.let {
+                Registro.anotar(
+                    ctx, scope, settings.account.host, settings.account.port,
+                    que = "Lista de canales", motivo = it, siempre = true,
+                )
+            }
         }
     }
 
@@ -381,6 +393,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
     fun abrirDiagnostico(volver: Screen) {
         findings.clear()
         report = null
+        fallas = Registro.leer(ctx)
         volverDeDiag = volver
         screen = Screen.DIAGNOSTICS
     }
@@ -914,6 +927,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
             running = diagRunning,
             findings = findings,
             report = report,
+            fallas = fallas,
             onRun = {
                 if (!diagRunning) {
                     findings.clear()

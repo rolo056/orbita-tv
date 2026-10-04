@@ -19,6 +19,7 @@ import com.orbita.tv.data.Biblioteca
 import com.orbita.tv.data.PuntoDeSerie
 import com.orbita.tv.data.Skin
 import com.orbita.tv.diag.DiagReport
+import com.orbita.tv.diag.Falla
 import com.orbita.tv.diag.Finding
 import com.orbita.tv.diag.Level
 import com.orbita.tv.net.Category
@@ -245,6 +246,52 @@ class CapturasTest {
 
     @Test
     fun tv_cuenta() = capturar("tv-23-cuenta") { Cuenta() }
+
+    /** Diagnostico con el registro de fallas: tres casos distintos, para ver que se distinguen. */
+    @Test
+    fun tv_registro_de_fallas() = capturar("tv-25-registro-de-fallas") {
+        fun falla(
+            cuando: Long,
+            que: String,
+            motivo: String,
+            proveedorMs: Int?,
+            ipv4Ms: Int?,
+            ipv6Ms: Int?,
+            rssi: Int,
+            tieneIpv4: Boolean = true,
+        ) = Falla(
+            cuando = cuando, que = que, motivo = motivo,
+            proveedorMs = proveedorMs, proveedorError = if (proveedorMs == null) "sin respuesta en 4 s" else null,
+            ipv4Ms = ipv4Ms, ipv4Error = if (ipv4Ms == null) "sin salida" else null,
+            ipv6Ms = ipv6Ms, ipv6Error = if (ipv6Ms == null) "sin salida" else null,
+            red = "wifi", rssi = rssi, enlaceMbps = 65, frecuenciaMhz = 2437,
+            tieneIpv4 = tieneIpv4, tieneIpv6 = true, memoriaLibreMb = 388, pocaMemoria = false,
+        )
+        DiagnosticsScreen(
+            running = false,
+            findings = emptyList(),
+            report = null,
+            onRun = {},
+            onExit = {},
+            fallas = listOf(
+                falla(
+                    1_791_075_600_000, "Canal 5 El Lider · HLS (segmentado)",
+                    "El servidor rechazó el pedido de este canal (403). No es la red: el proveedor contestó, y contestó que no.",
+                    proveedorMs = 152, ipv4Ms = 41, ipv6Ms = 38, rssi = -58,
+                ),
+                falla(
+                    1_791_072_000_000, "HCH · HLS (segmentado)",
+                    "No se pudo abrir la conexion · reintento 2",
+                    proveedorMs = null, ipv4Ms = null, ipv6Ms = 36, rssi = -61, tieneIpv4 = false,
+                ),
+                falla(
+                    1_791_068_400_000, "Lista de canales",
+                    "No se pudo abrir la conexion con el servidor.",
+                    proveedorMs = null, ipv4Ms = 44, ipv6Ms = 39, rssi = -82,
+                ),
+            ),
+        )
+    }
 
     /** El detalle tecnico de un canal que se oye bien y se ve con bloques verdes. */
     @Test

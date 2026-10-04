@@ -309,6 +309,17 @@ if sudo -n true 2> /dev/null && command -v iptables > /dev/null; then
   teclas 2 $OK
   foto canal-despues-del-corte
 
+  paso "23. Diagnostico: el registro de fallas anoto el corte, con la foto de la red en ese momento"
+  teclas 3 $ATRAS
+  teclas 3 $ATRAS
+  teclas 2 $DER
+  teclas 2 $ABAJO
+  teclas 2 $DER
+  foco
+  teclas 5 $OK
+  foto registro-de-fallas
+  textos
+
 else
   paso "21 y 22. Cortes de conexion: no se pudieron hacer (hace falta iptables)"
 fi

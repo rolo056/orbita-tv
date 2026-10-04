@@ -18,6 +18,7 @@ import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory
 import com.orbita.tv.data.AppSettings
+import com.orbita.tv.diag.Registro
 import com.orbita.tv.net.Http
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -333,10 +334,16 @@ class ResilientPlayer(
         if (cause is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException) {
             when (cause.responseCode) {
                 401, 403 -> {
+                    // Sin adivinar la causa: se probo que no era un bloqueo por
+                    // IP (un telefono en la misma red abria el mismo canal). Lo
+                    // que si se midio es que el proveedor sigue contando un
+                    // canal entre 30 y 90 segundos despues de cerrarlo.
                     fatal(
-                        "El servidor rechazo la conexion (" + cause.responseCode + "). " +
-                            "Suele ser la cuenta en uso en otro aparato, o el proveedor " +
-                            "bloqueando la IP de Starlink. Revisa Diagnostico."
+                        "El servidor rechazó el pedido de este canal (" + cause.responseCode + "). " +
+                            "No es la red: el proveedor contestó, y contestó que no. Puede ser " +
+                            "pasajero (la cuenta con sus aparatos ocupados: el proveedor sigue " +
+                            "contando un canal hasta un minuto después de cerrarlo) o propio de " +
+                            "este canal. Reintenta en un momento; queda anotado en Diagnóstico."
                     )
                     return
                 }
@@ -457,6 +464,7 @@ class ResilientPlayer(
             return
         }
         val wait = minOf(15_000L * ladderRounds, 300_000L)
+        anotar("Sin señal tras probar todas las formas (" + reason + ") · ronda " + ladderRounds, siempre = true)
         _stats.value = _stats.value.copy(
             status = "Sin señal · reintentando en " + (wait / 1000) + " s",
             retryRound = ladderRounds,
@@ -474,7 +482,21 @@ class ResilientPlayer(
         play(_stats.value.channelName, currentStreamId)
     }
 
+    /**
+     * Deja la falla en el registro, con la foto de como estaba la red de este
+     * aparato en ese momento (ver diag/Registro.kt). No interrumpe nada.
+     */
+    private fun anotar(motivo: String, siempre: Boolean = false) {
+        Registro.anotar(
+            context, scope, settings.account.host, settings.account.port,
+            que = _stats.value.channelName + " · " + _stats.value.variantLabel,
+            motivo = motivo,
+            siempre = siempre,
+        )
+    }
+
     private fun bump(status: String) {
+        anotar(status)
         _stats.value = _stats.value.copy(
             status = status,
             reconnects = _stats.value.reconnects + 1,
@@ -483,6 +505,7 @@ class ResilientPlayer(
     }
 
     private fun fatal(message: String) {
+        anotar(message, siempre = true)
         retryJob?.cancel()
         player.stop()
         _stats.value = _stats.value.copy(status = "Detenido", fatalError = message, onAir = false)
