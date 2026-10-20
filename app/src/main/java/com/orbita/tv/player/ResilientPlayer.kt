@@ -334,16 +334,27 @@ class ResilientPlayer(
         if (cause is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException) {
             when (cause.responseCode) {
                 401, 403 -> {
-                    // Sin adivinar la causa: se probo que no era un bloqueo por
-                    // IP (un telefono en la misma red abria el mismo canal). Lo
-                    // que si se midio es que el proveedor sigue contando un
-                    // canal entre 30 y 90 segundos despues de cerrarlo.
+                    // Medido el 20/10/2026 con el proveedor real: al dejar un
+                    // canal, su sesion HLS sigue viva uno o dos minutos, y
+                    // mientras tanto el panel no deja volver a abrir ESE canal
+                    // por HLS (403), aunque la cuenta tenga lugar. Por TS si
+                    // deja, en el acto. Era el "canal detenido" al volver al
+                    // canal de antes: ahora se pasa a la forma siguiente.
+                    val actual = variants.getOrNull(variantIndex)
+                    val siguiente = variants.getOrNull(variantIndex + 1)
+                    if (actual?.container == Container.HLS && siguiente != null &&
+                        siguiente.container != Container.HLS
+                    ) {
+                        advanceVariant("El proveedor todavía cuenta este canal de la vez anterior (403 por HLS)")
+                        return
+                    }
+                    // Un 403 por la via directa es un rechazo de verdad, y no se
+                    // insiste: martillar al panel termina en un bloqueo.
                     fatal(
-                        "El servidor rechazó el pedido de este canal (" + cause.responseCode + "). " +
-                            "No es la red: el proveedor contestó, y contestó que no. Puede ser " +
-                            "pasajero (la cuenta con sus aparatos ocupados: el proveedor sigue " +
-                            "contando un canal hasta un minuto después de cerrarlo) o propio de " +
-                            "este canal. Reintenta en un momento; queda anotado en Diagnóstico."
+                        "El servidor rechazó este canal (" + cause.responseCode + "). No es la red: " +
+                            "el proveedor contestó, y contestó que no. Puede ser la cuenta con todos " +
+                            "sus aparatos ocupados o algo propio de este canal. Reintenta en un " +
+                            "momento; queda anotado en Diagnóstico."
                     )
                     return
                 }

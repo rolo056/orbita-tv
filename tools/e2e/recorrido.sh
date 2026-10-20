@@ -138,6 +138,14 @@ foto detalle-tecnico
 textos
 teclas 2 $DER
 
+paso "4c. Arriba: vuelve al canal anterior. El panel, como el real, no deja reabrirlo por HLS (403): tiene que abrir directo, sin 'canal detenido'"
+teclas 12 $ARRIBA
+foto vuelta-al-canal-anterior
+teclas 3 $DER
+foto vuelta-detalle-tecnico
+textos
+teclas 2 $DER
+
 paso "5. Atras: de vuelta en la lista, con el foco en el canal que se miraba"
 teclas 3 $ATRAS
 foto de-vuelta
@@ -342,6 +350,8 @@ paso "Lo que la app le pidio al panel"
 anotar "  pedidos en total: $(grep -c 'GET /' "$SALIDA/panel.txt")"
 anotar "  pedidos parciales (adelantar y retomar): $(grep -c '\[bytes=' "$SALIDA/panel.txt")"
 anotar "  listas de canal pedidas: $(grep -c 'm3u8' "$SALIDA/panel.txt")"
+anotar "  listas rechazadas con 403 por volver a un canal recien dejado: $(grep -c '^HLS 403' "$SALIDA/panel.txt")"
+anotar "  canales abiertos por TS directo: $(grep -c '^TS directo' "$SALIDA/panel.txt")"
 
 kill "$PANEL" 2> /dev/null
 exit 0
