@@ -5,7 +5,11 @@ Contesta lo mismo que un panel: la cuenta, las categorias, los canales, las
 peliculas y las series, y entrega video de verdad:
 
   - los canales en vivo como HLS que nunca termina (una lista que avanza con el
-    reloj, armada con segmentos que se repiten), que es como llega un canal;
+    reloj, armada con segmentos que se repiten), que es como llega un canal, y
+    tambien como TS directo (una sola respuesta que no termina);
+  - con la manía del proveedor real (medida el 20/10/2026): un canal que se dejo
+    hace menos de un minuto no se puede volver a abrir por HLS (403), porque su
+    sesion vieja sigue contada; por TS si;
   - las peliculas y los episodios como un archivo que acepta pedidos parciales,
     que es lo que hace falta para adelantar, retroceder y seguir donde quedo.
 
@@ -169,8 +173,54 @@ def lista_en_vivo():
     return "\n".join(lineas) + "\n"
 
 
+# Sesiones HLS, para imitar al proveedor real: la hora de la ultima lista que
+# se pidio de cada canal, y cual es el canal que se esta mirando.
+ULTIMA_LISTA = {}
+MIRANDO = {"canal": None}
+SESION_VIVA_S = 60
+
+
+def reabrir_prohibido(canal):
+    """Volver por HLS a un canal dejado hace menos de un minuto: el panel real dice 403."""
+    ahora = time.time()
+    antes = ULTIMA_LISTA.get(canal)
+    prohibido = canal != MIRANDO["canal"] and antes is not None and ahora - antes < SESION_VIVA_S
+    if prohibido:
+        print("HLS 403: canal %s pedido otra vez a los %d s de dejarlo" % (canal, ahora - antes), flush=True)
+    else:
+        ULTIMA_LISTA[canal] = ahora
+        MIRANDO["canal"] = canal
+    return prohibido
+
+
 class Panel(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
+
+    def canal_ts(self, canal):
+        """El canal como TS directo: los segmentos uno tras otro, a ritmo de reloj.
+
+        Empieza siempre por el primero, asi el video corre un minuto entero sin
+        que los tiempos vuelvan atras.
+        """
+        print("TS directo: canal %s" % canal, flush=True)
+        total = cuantos_segmentos()
+        self.send_response(200)
+        self.send_header("Content-Type", "video/mp2t")
+        self.send_header("Connection", "close")
+        self.end_headers()
+        self.close_connection = True
+        k = 0
+        try:
+            while True:
+                with open(os.path.join(MEDIOS, "hls", "seg_%03d.ts" % (k % total)), "rb") as f:
+                    self.wfile.write(f.read())
+                self.wfile.flush()
+                k += 1
+                # Los primeros tres de golpe, para que arranque rapido.
+                if k > 3:
+                    time.sleep(SEGUNDOS_POR_SEGMENTO)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, OSError):
+            return
 
     def log_message(self, formato, *args):
         rango = self.headers.get("Range") if self.headers else None
@@ -300,11 +350,15 @@ class Panel(BaseHTTPRequestHandler):
                 return
             nombre = partes[3]
             if nombre.endswith(".m3u8"):
-                self.texto(lista_en_vivo(), "application/vnd.apple.mpegurl")
+                if reabrir_prohibido(nombre[:-5]):
+                    self.texto("", "text/plain", 403)
+                else:
+                    self.texto(lista_en_vivo(), "application/vnd.apple.mpegurl")
             elif re.match(r"^seg_\d{3}\.ts$", nombre):
                 self.archivo(os.path.join(MEDIOS, "hls", nombre), "video/mp2t")
+            elif re.match(r"^\d+\.ts$", nombre):
+                self.canal_ts(nombre[:-3])
             else:
-                # El canal pedido como .ts directo: este panel solo da HLS.
                 self.texto("", "text/plain", 404)
             return
 
