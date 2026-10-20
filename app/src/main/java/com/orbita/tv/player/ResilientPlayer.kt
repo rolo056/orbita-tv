@@ -286,6 +286,13 @@ class ResilientPlayer(
             reconnects = 0,
             decodificador = _stats.value.decodificador,
         )
+        // Canal nuevo: la pantalla en negro hasta su primera imagen, no la ultima
+        // del canal anterior congelada. Sin vaciar la lista, PlayerView no baja
+        // la cortina: todos los canales en vivo llegan con el mismo identificador
+        // provisorio (MaskingMediaSource.MASKING_EXTERNAL_PERIOD_UID) y cree que
+        // sigue siendo el mismo video. En una reconexion del mismo canal (load
+        // sin play) la ultima imagen se queda, con el aviso de "Reconectando".
+        player.clearMediaItems()
         load("Conectando")
     }
 
