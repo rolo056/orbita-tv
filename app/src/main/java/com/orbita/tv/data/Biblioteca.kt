@@ -110,6 +110,15 @@ data class Biblioteca(
         fun firma(account: Account): String = account.username + "@" + account.host
 
         /**
+         * Si lo guardado es de este usuario, aunque cambie el servidor. El mismo
+         * proveedor se alcanza a veces por otra direccion (el puente del VPS, una
+         * IPv6), y eso no puede borrar lo visto ni las favoritas. El usuario va
+         * antes de la ultima arroba: hay usuarios que son correos.
+         */
+        fun mismoUsuario(firmaGuardada: String, account: Account): Boolean =
+            account.username.isNotEmpty() && firmaGuardada.substringBeforeLast('@') == account.username
+
+        /**
          * Lee lo guardado. Nada de esto lanza excepciones: lo que no se entiende
          * se descarta, y un archivo ilegible es una biblioteca vacia.
          */

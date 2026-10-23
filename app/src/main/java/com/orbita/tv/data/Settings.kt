@@ -8,9 +8,18 @@ data class Account(
     val username: String = "",
     val password: String = "",
 ) {
-    val base: String get() = "${if (https) "https" else "http"}://$host:$port"
+    val base: String get() = "${if (https) "https" else "http"}://${hostParaUrl(host)}:$port"
     val isEmpty: Boolean get() = host.isBlank() || username.isBlank()
 }
+
+/**
+ * El servidor como va dentro de una direccion web. Una IPv6 va entre corchetes
+ * ([2001:470::2]); escrita sin ellos, la direccion queda mal armada. Existe por
+ * el puente del VPS por IPv6: con un equipo de Starlink que pierde IPv4, la TV
+ * solo llega a internet por IPv6.
+ */
+fun hostParaUrl(host: String): String =
+    if (host.contains(':') && !host.startsWith("[")) "[$host]" else host
 
 /** Orden en que se intenta pedir el canal. Ver StreamVariants. */
 enum class VariantOrder { HLS_FIRST, TS_FIRST }
