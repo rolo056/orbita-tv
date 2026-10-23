@@ -366,7 +366,11 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
         // mismos numeros son otros titulos: se empieza de cero.
         val guardada = Prefs.loadLibrary(ctx)
         val firma = Biblioteca.firma(settings.account)
-        biblioteca = if (guardada.cuenta == firma) guardada else Biblioteca(cuenta = firma)
+        biblioteca = if (Biblioteca.mismoUsuario(guardada.cuenta, settings.account)) {
+            guardada.copy(cuenta = firma)
+        } else {
+            Biblioteca(cuenta = firma)
+        }
         booted = true
         if (!settings.account.isEmpty) {
             screen = Screen.INICIO
@@ -671,8 +675,11 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
             busy = loading,
             onSave = { account: Account ->
                 scope.launch {
-                    val otraCuenta = account.host != settings.account.host ||
-                        account.username != settings.account.username
+                    // Otra cuenta es otro usuario u otra clave. Cambiar solo el
+                    // servidor (pasar por el puente del VPS, por IPv4 o IPv6) es
+                    // la misma cuenta: no se pierden favoritos ni lo visto.
+                    val otraCuenta = account.username != settings.account.username ||
+                        account.password != settings.account.password
                     settings = if (otraCuenta) {
                         // Los favoritos son numeros de canal de la cuenta
                         // anterior: en otro proveedor apuntan a otros canales.
@@ -762,7 +769,7 @@ private fun App(cuentaDePrueba: Account?, seccionDePrueba: Seccion?, aparienciaD
 
         Screen.CUENTA -> CuentaScreen(
             usuario = settings.account.username,
-            servidor = settings.account.host + ":" + settings.account.port,
+            servidor = com.orbita.tv.data.hostParaUrl(settings.account.host) + ":" + settings.account.port,
             estado = estadoCuenta,
             cargando = consultandoCuenta,
             error = errorCuenta,

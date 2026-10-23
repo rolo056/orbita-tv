@@ -46,8 +46,10 @@ class SmartDns(
     }
 
     override fun lookup(hostname: String): List<InetAddress> {
-        // Una IP literal no necesita resolverse.
-        if (hostname.firstOrNull()?.isDigit() == true) {
+        // Una IP literal no necesita resolverse, y no se filtra: una IPv6
+        // escrita como servidor (el puente por IPv6) se usa aunque este puesto
+        // "Forzar IPv4". Una IPv6 puede empezar con letra (fd4e::1).
+        if (hostname.firstOrNull()?.isDigit() == true || hostname.contains(':')) {
             runCatching { return listOf(InetAddress.getByName(hostname)) }
         }
 
