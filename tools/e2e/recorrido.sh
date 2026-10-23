@@ -37,15 +37,17 @@ foto() {
   N=$((N + 1))
   local nombre
   nombre=$(printf "e2e-%02d-%s.png" "$N" "$1")
-  adb exec-out screencap -p > "$SALIDA/$nombre" 2> /dev/null
+  # Con limite de tiempo: un emulador colgado no puede trabar el recorrido
+  # hasta que GitHub lo cancele (paso el 23/10/2026, en el paso 21).
+  timeout 30 adb exec-out screencap -p > "$SALIDA/$nombre" 2> /dev/null || anotar "  (la foto no salio: el emulador no respondio)"
   anotar "  foto $nombre ($(stat -c %s "$SALIDA/$nombre" 2> /dev/null || echo 0) bytes)"
 }
 
 # El arbol de la pantalla. Falla cuando algo en pantalla cambia sin parar (la
 # barra de una pelicula en marcha, por ejemplo): en ese caso se sigue sin el.
 volcar() {
-  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 || return 1
-  adb pull /sdcard/ui.xml "$SALIDA/ui.xml" > /dev/null 2>&1 || return 1
+  timeout 30 adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 || return 1
+  timeout 30 adb pull /sdcard/ui.xml "$SALIDA/ui.xml" > /dev/null 2>&1 || return 1
 }
 
 foco() {
@@ -66,7 +68,7 @@ textos() {
 teclas() {
   local espera="$1"
   shift
-  adb shell input keyevent "$@"
+  timeout 60 adb shell input keyevent "$@" || anotar "  (el emulador no respondio a las teclas: $*)"
   sleep "$espera"
 }
 
