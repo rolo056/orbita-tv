@@ -9,6 +9,9 @@
 # Nombre y puerto con los que el aparato llego al puente. Sirven para que las
 # respuestas del proveedor apunten de vuelta al puente y no a su direccion real.
 map $http_host $puente_nombre {
+    # Una IPv6 va entre corchetes ([2001:db8::2]:18766): sin esta linea quedaba
+    # "[2001" y las apps que arman el video con la ficha (IPTV Smarters) fallaban.
+    "~^(?<pn>\[[^\]]+\])"  $pn;
     "~^(?<pn>[^:]+)"    $pn;
     default             $host;
 }
